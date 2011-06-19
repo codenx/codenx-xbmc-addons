@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="1.0.0" provider-name="Senthil">
+<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="1.0.0" provider-name="codenx">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -8,21 +8,21 @@
         <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Oliyum Oliyum contains all what you look around on web for Tamil content.</summary>
-    <description>Links to watch Tamil TV and Movies.</description>
+    <summary>Oliyum Oliyum scrapes the web for Tamil TV Shows, Serials and Movies.</summary>
+    <description>Links to watch Tamil TV Shows and Movies.</description>
     <platform>all</platform>
   </extension>
 </addon>
 
-<addon id="repository.codenx.addons" name="codenx's XBMC Addons" version="1.0.0" provider-name="senthil">
+<addon id="repository.codenx.addons" name="codenx's XBMC Addons" version="1.0.0" provider-name="codenx">
 	<extension	point="xbmc.addon.repository" name="codenx's XBMC Addon Repository">
 		<info compressed="false">https://github.com/codenx/codenx-xbmc-addons/raw/master/addons.xml</info>
 		<checksum>https://github.com/codenx/codenx-xbmc-addons/raw/master/addons.xml.md5</checksum>
 		<datadir zip="true">https://github.com/codenx/codenx-xbmc-addons/raw/master/data/</datadir>
 	</extension>
 	<extension point="xbmc.addon.metadata">
-		<summary>Install codenx's Addons</summary>
-		<description>Download and install codenx's Addons</description>
+		<summary>Install Code 'n X Addons</summary>
+		<description>Download and install Code 'n X Addons</description>
 		<disclaimer></disclaimer>
 		<platform>all</platform>
 	</extension>

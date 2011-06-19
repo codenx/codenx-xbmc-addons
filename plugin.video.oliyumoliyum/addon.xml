@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="1.0.0" provider-name="Senthil">
+<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="1.0.0" provider-name="codenx">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -7,8 +7,8 @@
         <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Oliyum Oliyum contains all what you look around on web for Tamil content.</summary>
-    <description>Links to watch Tamil TV and Movies.</description>
+    <summary>Oliyum Oliyum scrapes the web for Tamil TV Shows, Serials and Movies.</summary>
+    <description>Links to watch Tamil TV Shows and Movies.</description>
     <platform>all</platform>
   </extension>
 </addon>
