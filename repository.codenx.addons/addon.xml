@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="repository.codenx.addons" name="codenx's XBMC Addons" version="1.0.0" provider-name="senthil">
 	<extension	point="xbmc.addon.repository" name="codenx's XBMC Addon Repository">
-		<info compressed="false">https://github.com/codenx/repository-codenx-addons/raw/master/addons.xml</info>
-		<checksum>https://github.com/codenx/repository-codenx-addons/raw/master/addons.xml.md5</checksum>
-		<datadir zip="true">https://github.com/codenx/repository-codenx-addons/tree/master/</datadir>
+		<info compressed="false">https://github.com/codenx/codenx-xbmc-addons/raw/master/addons.xml</info>
+		<checksum>https://github.com/codenx/codenx-xbmc-addons/raw/master/addons.xml.md5</checksum>
+		<datadir zip="true">https://github.com/codenx/codenx-xbmc-addons/tree/master/</datadir>
 	</extension>
 	<extension point="xbmc.addon.metadata">
 		<summary>Install codenx's Addons</summary>
