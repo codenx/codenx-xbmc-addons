@@ -681,11 +681,11 @@ def Load_and_Play_Video_Links(url,name):
 
 def Main_Categories():
    Add_Dir( '[B]Movies[/B]', 'http://www.tamilavx.com/list.php?id=1', 10, '')
-   Add_Dir( '[B]TV Shows[/B]', 'http://www.dishtamilca.com/catmovie.php?id=30&alp=all', 20, '')
-   Add_Dir( '[B]TV Serials[/B]', 'http://www.dishtamilca.com/catmovie.php?id=31&alp=all', 20, '')
+   Add_Dir( '[B]TV Shows[/B]', 'http://www.dishtamil.ca/catmovie.php?id=30&alp=all', 20, '')
+   Add_Dir( '[B]TV Serials[/B]', 'http://www.dishtamil.ca/catmovie.php?id=31&alp=all', 20, '')
    Add_Dir( '[B]Comedy[/B]', 'http://www.tamilavx.com/list.php?id=33&alp=all', 30, '')
    Add_Dir( '[B]Video Songs[/B]', 'http://www.tamilavx.com/list.php?id=18&alp=all', 40, '')
-   Add_Dir( '[B]Wallpaper[/B]', 'http://www.dishtamilca.com/gallery2.php', 60, '' )
+   Add_Dir( '[B]Wallpaper[/B]', 'http://www.dishtamil.ca/gallery2.php', 60, '' )
                        
 def Movie_Categories( url ):
    Add_Dir(' [B]New Movies[/B]', 'http://www.tamilavx.com/list.php?id=1&alp=all', 11, '' )
@@ -785,7 +785,7 @@ def TV_Show_Sort_Order( url ):
    Add_Dir(' [B]Sort Alphabetically[/B]', url, 23, '' )
 
 def TV_Show_List( url ):
-   baseUrl = "http://www.dishtamilca.com"
+   baseUrl = "http://www.dishtamil.ca"
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
@@ -818,7 +818,7 @@ def TV_Show_List( url ):
 def TV_Show_A_Z( url ):
    print "A-Z Viewed:" + url
    #http://www.tamilavx.com/list.php?id=29&alp=A
-   baseUrl = "http://www.dishtamilca.com"
+   baseUrl = "http://www.dishtamil.ca"
    sortPages = []
    sortPages.append('0')
    for c in range( ord('A'), ord('Z')+1 ):
@@ -833,7 +833,7 @@ def TV_Show_A_Z( url ):
       Add_Dir( page, rurl, 22, '' )
 
 def TV_Show_Episode_List( url ):
-   baseUrl = "http://www.dishtamilca.com"
+   baseUrl = "http://www.dishtamil.ca"
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
