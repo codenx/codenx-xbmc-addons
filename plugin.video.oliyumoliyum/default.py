@@ -138,103 +138,125 @@ def Play_Video(url,name,isRequestForURL,isRequestForPlaylist):
        print "code=" + code
 
        linkImage = 'http://i.ytimg.com/vi/'+code+'/default.jpg'
-       req = urllib2.Request('http://www.youtube.com/get_video_info?video_id='+code)
+       req = urllib2.Request('http://www.youtube.com/watch?v='+code+'&fmt=18')
        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
        response = urllib2.urlopen(req)
        link=response.read()
        response.close()
-       p=re.compile('&fmt_url_map=(.+?)&')
-       if re.search('status=fail', link):
-          print "link:", urllib.unquote_plus(link)
-          if not re.search('removed', urllib.unquote_plus(link)):
-            req = urllib2.Request('http://www.youtube.com/watch?v='+code)
-            req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
-            response = urllib2.urlopen(req)
-            link=response.read()
-            response.close()
-            p=re.compile(';fmt_url_map=(.+?);')
-          else:
-            return
-       else:
-          print "status != fail"
-          print link
 
-       print "testing"
-       match=p.findall(link)
-       print "match:"
-       print match
-       map=match[0].split('%2C')
-       highResoVid = ''
-       youtubeVideoQual = 1 #fbn.getSetting('videoQual')
+       if len(re.compile('shortlink" href="http://youtu.be/(.+?)"').findall(link)) == 0:
+            if len(re.compile('\'VIDEO_ID\': "(.+?)"').findall(link)) == 0:
+                 req = urllib2.Request('http://www.youtube.com/get_video_info?video_id='+code+'&asv=3&el=detailpage&hl=en_US')
+                 req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+                 response = urllib2.urlopen(req)
+                 link=response.read()
+                 response.close()
+       map = None
+       match=re.compile('fmt_stream_map=(.+?)&').findall(link)
+       if len(match) == 0:
+            map=(re.compile('fmt_stream_map": "(.+?)"').findall(link)[0]).replace('\\/', '/')
+       else:
+            map=urllib.unquote(match[0]).decode('utf8').split('url=')
+       if re.search('status=fail', link):
+            return
+       if map == None:
+            return
        print "map:"
        print map
-       for attr in map:
-          parts = attr.split('%7C')
-          qual = parts[0]
-          print "qual:" + qual
-          url = urllib.unquote(parts[1]).decode('utf8')
-          if(qual == '13'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY Low Quality - 176x144',url,linkImage)
-              elif(highResoVid == ''):
-                      highResoVid = url
-          if(qual == '17'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY Medium Quality - 176x144',url,linkImage)
-              elif(highResoVid == ''):
-                      highResoVid = url
-          if(qual == '36'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY High Quality - 320x240',url,linkImage)
-              elif(highResoVid == ''):
-                      highResoVid = url
-          if(qual == '5'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY Low Quality - 400\\327226',url,linkImage)
-              elif(highResoVid == ''):
-                      highResoVid = url
-          if(qual == '34'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY Medium Quality - 480x360',url,linkImage)
-              elif(highResoVid == ''):
-                      highResoVid = url
-          if(qual == '6'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY Medium Quality - 640\\327360',url,linkImage)
-              elif(highResoVid == ''):
-                      highResoVid = url
-          if(qual == '35'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY High Quality - 854\\327480',url,linkImage)
-              else:
-                      highResoVid = url
-          if(qual == '18'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY High Quality - 480x360',url,linkImage)
-              else:
-                      highResoVid = url
 
-          if(qual == '22'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY High Quality - 1280x720',url,linkImage)
-              else:
-                      if youtubeVideoQual == '1' or youtubeVideoQual == '2': 
-                              highResoVid = url
-                              break
-          if(qual == '37'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY High Quality - 1920x1080',url,linkImage)
-              else:
-                      if youtubeVideoQual == '2':
-                              highResoVid = url
-                              break
-          if(qual == '38'):
-              if(not(isRequestForURL)):
-                      Add_Link ('PLAY Epic Quality - 4096\\3272304',url,linkImage)
-              else:
-                      if youtubeVideoQual == '2':
-                              highResoVid = url
-                              break
+       highResoVid = ''
+       youtubeVideoQual = 1 #fbn.getSetting('videoQual')
+       for attr in map:
+               if attr == '':
+                       continue
+               parts = attr.split('&qual')
+               url = urllib.unquote(parts[0]).decode('utf8')
+               print url
+               qual = re.compile('&itag=(.+?)&').findall(url)[0]
+               print qual
+               if(qual == '13'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY 3GP Low Quality - 176x144',url,linkImage)
+                       elif(highResoVid == ''):
+                               highResoVid = url
+               if(qual == '17'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY 3GP Medium Quality - 176x144',url,linkImage)
+                       elif(highResoVid == ''):
+                               highResoVid = url
+               if(qual == '36'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY 3GP High Quality - 320x240',url,linkImage)
+                       elif(highResoVid == ''):
+                               highResoVid = url
+               if(qual == '5'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY FLV Low Quality - 400\\327226',url,linkImage)
+                       elif(highResoVid == ''):
+                               highResoVid = url
+               if(qual == '34'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY FLV Medium Quality - 480x360',url,linkImage)
+                       elif(highResoVid == ''):
+                               highResoVid = url
+               if(qual == '6'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY FLV Medium Quality - 640\\327360',url,linkImage)
+                       elif(highResoVid == ''):
+                               highResoVid = url
+               if(qual == '35'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY FLV High Quality - 854\\327480',url,linkImage)
+                       else:
+                               highResoVid = url
+               if(qual == '18'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY MP4 High Quality - 480x360',url,linkImage)
+                       else:
+                               highResoVid = url
+                               
+               if(qual == '22'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY MP4 High Quality - 1280x720',url,linkImage)
+                       else:
+                               highResoVid = url
+                               if youtubeVideoQual == '1' or youtubeVideoQual == '2':
+                                       break
+               if(qual == '37'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY MP4 High-2 Quality - 1920x1080',url,linkImage)
+                       else:
+                               highResoVid = url
+                               if youtubeVideoQual == '2':
+                                       break
+               if(qual == '38'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY MP4 Epic Quality - 4096\\3272304',url,linkImage)
+                       else:
+                               highResoVid = url
+                               if youtubeVideoQual == '2':
+                                       break
+               if(qual == '43'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY WEBM Medium Quality - 4096\\3272304',url,linkImage)
+                       else:
+                               highResoVid = url
+               if(qual == '44'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY WEBM High Quality - 4096\\3272304',url,linkImage)
+                       else:
+                               highResoVid = url
+                               if youtubeVideoQual == '1' or youtubeVideoQual == '2':
+                                       break
+               if(qual == '45'):
+                       if(not(isRequestForURL)):
+                               addLink ('PLAY WEBM High-2 Quality - 4096\\3272304',url,linkImage)
+                       else:
+                               highResoVid = url
+                               if youtubeVideoQual == '2':
+                                       break
+       print highResoVid
+
        if(isRequestForURL):
           if(isRequestForPlaylist):
             liz = xbmcgui.ListItem('VIDEO PART', thumbnailImage=linkImage)
@@ -621,8 +643,18 @@ def Load_Video( url ):
       else:
          print "all other videos"
          # All other video sources
+         sourceName = ''
          sourceVideo = re.compile(' src=(.+?) ').findall( ' ' + sourceVideo + ' ' )[0].replace( '\'', '').replace( '"','')
-         sourceName = re.compile( 'www\.(.+?)\.com' ).findall( sourceVideo)[0]
+         try:
+            if re.search( 'http://www', sourceVideo ):
+               sourceName = re.compile( 'www\.(.+?)\.com' ).findall( sourceVideo)[0]
+            else:
+               sourceName = re.compile( 'http://(.+?)\.com' ).findall( sourceVideo)[0]
+         except:
+            pass
+         if sourceName == '':
+            print "Skipping source: " + sourceVideo
+            continue
          srouceName = sourceName.capitalize()
          Add_Playable_Movie_Link('[B]Full Video[/B] Source #' + str( srcNbr ) + ' ' + sourceName, unescape( sourceVideo ), 2, '' )
          srcNbr = srcNbr + 1

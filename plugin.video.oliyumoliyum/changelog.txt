@@ -9,3 +9,7 @@
 [B]Version v1.0.2[/B]
 
 - Server address changed again, Fixed server address
+
+[B]Version v1.0.3[/B]
+
+- Server address changed again, youtube gdata format changed.
