@@ -13,3 +13,7 @@
 [B]Version v1.0.3[/B]
 
 - Server address changed again, youtube gdata format changed.
+
+[B]Version v1.0.4[/B]
+
+- Server address changed again

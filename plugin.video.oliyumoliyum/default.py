@@ -634,7 +634,7 @@ def Load_Video( url ):
          partNbr = partNbr + 1
       elif re.search( 'http://www.youtube.com/embed/', sourceVideo ):
          print "found embeded youtube video"
-         videoID = re.compile( 'http://www.youtube.com/embed/(.+?)\?' ).findall( sourceVideo )[0]
+         videoID = re.compile( 'http://www.youtube.com/embed/(.+?)[\?\"]' ).findall( sourceVideo )[0]
          videoLink = 'http://www.youtube.com/v/' + videoID
          Add_Playable_Movie_Link('Source #' + str( srcNbr ) + ' Youtube - Part' + str( partNbr ), videoLink, 2, '')
          playList = playList + videoLink + ':;'
@@ -712,18 +712,18 @@ def Load_and_Play_Video_Links(url,name):
    return ok
 
 def Main_Categories():
-   Add_Dir( '[B]Movies[/B]', 'http://www.tamilavx.com/list.php?id=1', 10, '')
-   Add_Dir( '[B]TV Shows[/B]', 'http://www.dishtamil.ca/catmovie.php?id=30&alp=all', 20, '')
-   Add_Dir( '[B]TV Serials[/B]', 'http://www.dishtamil.ca/catmovie.php?id=31&alp=all', 20, '')
-   Add_Dir( '[B]Comedy[/B]', 'http://www.tamilavx.com/list.php?id=33&alp=all', 30, '')
-   Add_Dir( '[B]Video Songs[/B]', 'http://www.tamilavx.com/list.php?id=18&alp=all', 40, '')
-   Add_Dir( '[B]Wallpaper[/B]', 'http://www.dishtamil.ca/gallery2.php', 60, '' )
+   Add_Dir( '[B]Movies[/B]', 'http://www.utamilmovies.com/list.php?id=1', 10, '')
+   Add_Dir( '[B]TV Shows[/B]', 'http://www.dishtamilonline.com/catmovie.php?id=30&alp=all', 20, '')
+   Add_Dir( '[B]TV Serials[/B]', 'http://www.dishtamilonline.com/catmovie.php?id=31&alp=all', 20, '')
+   Add_Dir( '[B]Comedy[/B]', 'http://www.utamilmovies.com/list.php?id=33&alp=all', 30, '')
+   Add_Dir( '[B]Video Songs[/B]', 'http://www.utamilmovies.com/list.php?id=18&alp=all', 40, '')
+   Add_Dir( '[B]Wallpaper[/B]', 'http://www.dishtamilonline.com/gallery2.php', 60, '' )
                        
 def Movie_Categories( url ):
-   Add_Dir(' [B]New Movies[/B]', 'http://www.tamilavx.com/list.php?id=1&alp=all', 11, '' )
-   Add_Dir(' [B]DVD Movies[/B]', 'http://www.tamilavx.com/list.php?id=2&alp=all', 11, '' )
-   Add_Dir(' [B]Classic Movies[/B]', 'http://www.tamilavx.com/list.php?id=3&alp=all', 11, '' )
-   Add_Dir(' [B]Mid Movies[/B]', 'http://www.tamilavx.com/list.php?id=4&alp=all', 11, '' )
+   Add_Dir(' [B]New Movies[/B]', 'http://www.utamilmovies.com/list.php?id=1&alp=all', 11, '' )
+   Add_Dir(' [B]DVD Movies[/B]', 'http://www.utamilmovies.com/list.php?id=2&alp=all', 11, '' )
+   Add_Dir(' [B]Classic Movies[/B]', 'http://www.utamilmovies.com/list.php?id=3&alp=all', 11, '' )
+   Add_Dir(' [B]Mid Movies[/B]', 'http://www.utamilmovies.com/list.php?id=4&alp=all', 11, '' )
 
 def Movie_Sort_Order( url ):
    req = urllib2.Request(url)
@@ -740,7 +740,7 @@ def Movie_Sort_Order( url ):
    Add_Dir(' [B]Sort Alphabetically[/B]', url, 13, '' )
 
 def Movie_List( url ):
-   baseUrl = "http://www.tamilavx.com"
+   baseUrl = "http://www.utamilmovies.com"
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
@@ -772,8 +772,8 @@ def Movie_List( url ):
 
 def Movie_A_Z( url ):
    print "A-Z Viewed:" + url
-   #http://www.tamilavx.com/list.php?id=29&alp=A
-   baseUrl = "http://www.tamilavx.com"
+   #http://www.utamilmovies.com/list.php?id=29&alp=A
+   baseUrl = "http://www.utamilmovies.com"
    sortPages = []
    sortPages.append('#')
    for c in range( ord('A'), ord('Z')+1 ):
@@ -789,7 +789,7 @@ def Movie_A_Z( url ):
 
 def Movies_Video_Link( url ):
    print "Video Link=" + url
-   baseUrl = "http://www.tamilavx.com/"
+   baseUrl = "http://www.utamilmovies.com/"
    req = urllib2.Request( url )
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen( req )
@@ -817,7 +817,7 @@ def TV_Show_Sort_Order( url ):
    Add_Dir(' [B]Sort Alphabetically[/B]', url, 23, '' )
 
 def TV_Show_List( url ):
-   baseUrl = "http://www.dishtamil.ca"
+   baseUrl = "http://www.dishtamilonline.com"
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
@@ -849,8 +849,8 @@ def TV_Show_List( url ):
 
 def TV_Show_A_Z( url ):
    print "A-Z Viewed:" + url
-   #http://www.tamilavx.com/list.php?id=29&alp=A
-   baseUrl = "http://www.dishtamil.ca"
+   #http://www.utamilmovies.com/list.php?id=29&alp=A
+   baseUrl = "http://www.dishtamilonline.com"
    sortPages = []
    sortPages.append('0')
    for c in range( ord('A'), ord('Z')+1 ):
@@ -865,7 +865,7 @@ def TV_Show_A_Z( url ):
       Add_Dir( page, rurl, 22, '' )
 
 def TV_Show_Episode_List( url ):
-   baseUrl = "http://www.dishtamil.ca"
+   baseUrl = "http://www.dishtamilonline.com"
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)

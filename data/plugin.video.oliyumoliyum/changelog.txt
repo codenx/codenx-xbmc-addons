@@ -10,6 +10,10 @@
 
 - Server address changed again, Fixed server address
 
-[B]Version v1.0.2[/B]
+[B]Version v1.0.3[/B]
 
 - Server address changed again, Youtube gdata format changed
+
+[B]Version v1.0.4[/B]
+
+- Server address changed again
