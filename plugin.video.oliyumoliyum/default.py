@@ -270,10 +270,10 @@ def Play_Video(url,name,isRequestForURL,isRequestForPlaylist):
    #DAILYMOTION
    try:
      match=re.compile('http://www.dailymotion.com/(.+?)&').findall(url)
-     if len(match) == 0:
-         match = re.compile( 'http://www.dailymotion.com/embed/video/(.+?)').findall( url )
-         print "embed match:"
-         print match
+     #if len(match) == 0:
+     #    match = re.compile( 'http://www.dailymotion.com/embed/video/(.+?)').findall( url )
+     #    print "embed match:"
+     #    print match
      if(len(match) > 0):
          newUrl = url.replace('?','&')
          match=re.compile('video/(.+?)&').findall(newUrl)
@@ -537,6 +537,7 @@ def Play_Video(url,name,isRequestForURL,isRequestForPlaylist):
       p=re.compile('videobb.com/e/(.+?)&TTV;')
       match=p.findall(url)
       url='http://www.videobb.com/player_control/settings.php?v='+match[0]
+      print 
       settingsObj = json.load(urllib.urlopen(url))['settings']
    
       imgUrl = str(settingsObj['config']['thumbnail'])
@@ -712,20 +713,83 @@ def Load_and_Play_Video_Links(url,name):
    return ok
 
 def Main_Categories():
-   Add_Dir( '[B]Movies[/B]', 'http://www.utamilmovies.com/list.php?id=1', 10, '')
-   Add_Dir( '[B]TV Shows[/B]', 'http://www.dishtamilonline.com/catmovie.php?id=30&alp=all', 20, '')
-   Add_Dir( '[B]TV Serials[/B]', 'http://www.dishtamilonline.com/catmovie.php?id=31&alp=all', 20, '')
-   Add_Dir( '[B]Comedy[/B]', 'http://www.utamilmovies.com/list.php?id=33&alp=all', 30, '')
-   Add_Dir( '[B]Video Songs[/B]', 'http://www.utamilmovies.com/list.php?id=18&alp=all', 40, '')
-   Add_Dir( '[B]Wallpaper[/B]', 'http://www.dishtamilonline.com/gallery2.php', 60, '' )
+   url = "http://www.dishtamilonline.com/"
+   req = urllib2.Request(url)
+   req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+   response = urllib2.urlopen(req)
+   link=response.read()
+   response.close()
+   
+   path = re.compile('<a href="(.+)"><b>Movies</b>').findall(link)
+   if 'www' not in path[0]:
+      path[0] = url + path[0]
+   print "Movies=" + path[0]
+   Add_Dir( '[B]Movies[/B]', path[0], 10, '')
+
+   path = re.compile('<a href="(.+)"><b>TV Shows</b>').findall(link)
+   if 'www' not in path:
+      path[0] = url + path[0]
+   print "Tv Shows=" + path[0]
+   Add_Dir( '[B]TV Shows[/B]', path[0], 20, '')
+
+   path = re.compile('<a href="(.+)"><b>TV Serials</b>').findall(link)
+   if 'www' not in path:
+      path[0] = url + path[0]
+   print "Tv Serials=" + path[0]
+   Add_Dir( '[B]TV Serials[/B]', path[0], 20, '')
+
+   path = re.compile('<a href="(.+)"><b>Comedy</b>').findall(link)
+   if 'www' not in path:
+      path[0] = url + path[0]
+   print "Comedy=" + path[0]
+   Add_Dir( '[B]Comedy[/B]', path[0], 30, '')
+
+   path = re.compile('<a href="(.+)"><b>Video Songs</b>').findall(link)
+   if 'www' not in path:
+      path[0] = url + path[0]
+   print "Video Songs=" + path[0]
+   Add_Dir( '[B]Video Songs[/B]', path[0], 40, '')
+
+   path = re.compile('<a href="(.+)"><b>Wallpaper</b>').findall(link)
+   if 'www' not in path:
+      path[0] = url + path[0]
+   print "Wallpaper=" + path[0]
+   Add_Dir( '[B]Wallpaper[/B]', path[0], 60, '')
                        
 def Movie_Categories( url ):
-   Add_Dir(' [B]New Movies[/B]', 'http://www.utamilmovies.com/list.php?id=1&alp=all', 11, '' )
-   Add_Dir(' [B]DVD Movies[/B]', 'http://www.utamilmovies.com/list.php?id=2&alp=all', 11, '' )
-   Add_Dir(' [B]Classic Movies[/B]', 'http://www.utamilmovies.com/list.php?id=3&alp=all', 11, '' )
-   Add_Dir(' [B]Mid Movies[/B]', 'http://www.utamilmovies.com/list.php?id=4&alp=all', 11, '' )
+   print "Movie url = " + url
+   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
+   baseUrl = 'http://www.'+baseUrl+'.com/'
+   print "baseUrl=" + baseUrl
+
+   req = urllib2.Request(url)
+   req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+   response = urllib2.urlopen(req)
+   link=response.read()
+   response.close()
+
+   path = re.compile('<a href="(.+)">New Movies</a>').findall(link)
+   if 'www' not in path:
+      path[0] = baseUrl + path[0]
+   Add_Dir(' [B]New Movies[/B]', path[0], 11, '' )
+
+   path = re.compile('<a href="(.+)">DvD Movies</a>').findall(link)
+   if 'www' not in path:
+      path[0] = baseUrl + path[0]
+   Add_Dir(' [B]DVD Movies[/B]', path[0], 11, '' )
+
+   path = re.compile('<a href="(.+)">Classic Movies</a>').findall(link)
+   if 'www' not in path:
+      path[0] = baseUrl + path[0]
+   Add_Dir(' [B]Classic Movies[/B]', path[0], 11, '' )
+
+   path = re.compile('<a href="(.+)">Mid Movies</a>').findall(link)
+   if 'www' not in path:
+      path[0] = baseUrl + path[0]
+   Add_Dir(' [B]Mid Movies[/B]', path[0], 11, '' )
 
 def Movie_Sort_Order( url ):
+   print "Movie sort url = " + url
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
@@ -740,7 +804,11 @@ def Movie_Sort_Order( url ):
    Add_Dir(' [B]Sort Alphabetically[/B]', url, 13, '' )
 
 def Movie_List( url ):
-   baseUrl = "http://www.utamilmovies.com"
+   print "Movie list url = " + url
+   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
+   baseUrl = 'http://www.'+baseUrl+'.com'
+   print "baseUrl=" + baseUrl
+
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
@@ -772,8 +840,6 @@ def Movie_List( url ):
 
 def Movie_A_Z( url ):
    print "A-Z Viewed:" + url
-   #http://www.utamilmovies.com/list.php?id=29&alp=A
-   baseUrl = "http://www.utamilmovies.com"
    sortPages = []
    sortPages.append('#')
    for c in range( ord('A'), ord('Z')+1 ):
@@ -789,7 +855,9 @@ def Movie_A_Z( url ):
 
 def Movies_Video_Link( url ):
    print "Video Link=" + url
-   baseUrl = "http://www.utamilmovies.com/"
+   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
+   baseUrl = 'http://www.'+baseUrl+'.com/'
+   print "baseUrl=" + baseUrl
    req = urllib2.Request( url )
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen( req )
@@ -803,6 +871,8 @@ def Movies_Video_Link( url ):
    Load_Video( videoUrl )
 
 def TV_Show_Sort_Order( url ):
+   print "TV url = " + url
+
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
@@ -817,7 +887,10 @@ def TV_Show_Sort_Order( url ):
    Add_Dir(' [B]Sort Alphabetically[/B]', url, 23, '' )
 
 def TV_Show_List( url ):
-   baseUrl = "http://www.dishtamilonline.com"
+   print "Tv show list url = " + url
+   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
+   baseUrl = 'http://www.'+baseUrl+'.com'
+   print "baseUrl=" + baseUrl
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
@@ -849,8 +922,6 @@ def TV_Show_List( url ):
 
 def TV_Show_A_Z( url ):
    print "A-Z Viewed:" + url
-   #http://www.utamilmovies.com/list.php?id=29&alp=A
-   baseUrl = "http://www.dishtamilonline.com"
    sortPages = []
    sortPages.append('0')
    for c in range( ord('A'), ord('Z')+1 ):
@@ -865,7 +936,10 @@ def TV_Show_A_Z( url ):
       Add_Dir( page, rurl, 22, '' )
 
 def TV_Show_Episode_List( url ):
-   baseUrl = "http://www.dishtamilonline.com"
+   print "Tv Episode url = " + url
+   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
+   baseUrl = 'http://www.'+baseUrl+'.com'
+   print "baseUrl=" + baseUrl
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
