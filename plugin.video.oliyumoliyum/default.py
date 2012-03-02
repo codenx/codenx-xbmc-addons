@@ -152,9 +152,10 @@ def Play_Video(url,name,isRequestForURL,isRequestForPlaylist):
                  link=response.read()
                  response.close()
        map = None
-       match=re.compile('fmt_stream_map=(.+?)&').findall(link)
+       link = link.replace('\\u0026', '&')
+       match=re.compile('url_encoded_fmt_stream_map=(.+?)&').findall(link)
        if len(match) == 0:
-            map=(re.compile('fmt_stream_map": "(.+?)"').findall(link)[0]).replace('\\/', '/')
+            map=(re.compile('url_encoded_fmt_stream_map": "(.+?)"').findall(link)[0]).replace('\\/', '/').split('url=')
        else:
             map=urllib.unquote(match[0]).decode('utf8').split('url=')
        if re.search('status=fail', link):
@@ -169,11 +170,10 @@ def Play_Video(url,name,isRequestForURL,isRequestForPlaylist):
        for attr in map:
                if attr == '':
                        continue
-               parts = attr.split('&qual')
+               parts = attr.split('&quality')
                url = urllib.unquote(parts[0]).decode('utf8')
-               print url
-               qual = re.compile('&itag=(.+?)&').findall(url)[0]
-               print qual
+               qual = re.compile('&itag=(\d*)').findall(url)[0]
+               print "qual=" , qual
                if(qual == '13'):
                        if(not(isRequestForURL)):
                                addLink ('PLAY 3GP Low Quality - 176x144',url,linkImage)
@@ -270,11 +270,11 @@ def Play_Video(url,name,isRequestForURL,isRequestForPlaylist):
    #DAILYMOTION
    try:
      match=re.compile('http://www.dailymotion.com/(.+?)&').findall(url)
-     #if len(match) == 0:
-     #    match = re.compile( 'http://www.dailymotion.com/embed/video/(.+?)').findall( url )
-     #    print "embed match:"
-     #    print match
-     if(len(match) > 0):
+     if len(match) == 0:
+         match = re.compile( 'http://www.dailymotion.com/embed/video/(.+?)').findall( url )
+         print "embed match:"
+         print match
+     elif(len(match) > 0):
          newUrl = url.replace('?','&')
          match=re.compile('video/(.+?)&').findall(newUrl)
          if len(match) == 0:

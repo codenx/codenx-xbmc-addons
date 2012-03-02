@@ -21,3 +21,7 @@
 [B]Version v1.0.5[/B]
 
 - Scraped server address from HTTP response instead of hard coding it.
+
+[B]Version v1.0.6[/B]
+
+- Fix Youtube and Dailymotion breakage.
