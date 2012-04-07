@@ -25,3 +25,7 @@
 [B]Version v1.0.6[/B]
 
 - Fix Youtube and Dailymotion breakage.
+
+[B]Version v1.0.7[/B]
+
+- Hosting site was moved to a different server and broker the scrapper. Fixed it by parsing the Location header in response.

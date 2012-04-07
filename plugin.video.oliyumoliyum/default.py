@@ -717,6 +717,8 @@ def Main_Categories():
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
+   url = response.geturl()
+   print "URL = " + url
    link=response.read()
    response.close()
    
@@ -758,15 +760,17 @@ def Main_Categories():
                        
 def Movie_Categories( url ):
    print "Movie url = " + url
-   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
-   baseUrl = 'http://www.'+baseUrl+'.com/'
-   print "baseUrl=" + baseUrl
 
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
+   baseUrl = response.geturl()
    link=response.read()
    response.close()
+
+   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
+   baseUrl = 'http://' + baseUrl + '/'
+   print "baseUrl=" + baseUrl
 
    path = re.compile('<a href="(.+)">New Movies</a>').findall(link)
    if 'www' not in path:
@@ -805,16 +809,18 @@ def Movie_Sort_Order( url ):
 
 def Movie_List( url ):
    print "Movie list url = " + url
-   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
-   baseUrl = 'http://www.'+baseUrl+'.com'
-   print "baseUrl=" + baseUrl
 
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
+   baseUrl = response.geturl()
    link=response.read()
    response.close()
    
+   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
+   baseUrl = 'http://' + baseUrl + '/'
+   print "baseUrl=" + baseUrl
+
    # Find the #pages in the current category
    pages=re.compile( '<span class="page"> <a href=".+">(\d{1,2})<' ).findall( link)
 
@@ -855,14 +861,16 @@ def Movie_A_Z( url ):
 
 def Movies_Video_Link( url ):
    print "Video Link=" + url
-   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
-   baseUrl = 'http://www.'+baseUrl+'.com/'
-   print "baseUrl=" + baseUrl
    req = urllib2.Request( url )
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen( req )
+   baseUrl = response.geturl()
    link=response.read()
    response.close()
+   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
+   baseUrl = 'http://' + baseUrl + '/'
+   print "baseUrl=" + baseUrl
+
    match=re.compile('<img src=".*" alt=".*" /> <a href="(.*)">Full Movie.*</a> <br />').findall(link)
    print match
    videoUrl = baseUrl + match[0]
@@ -888,15 +896,17 @@ def TV_Show_Sort_Order( url ):
 
 def TV_Show_List( url ):
    print "Tv show list url = " + url
-   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
-   baseUrl = 'http://www.'+baseUrl+'.com'
-   print "baseUrl=" + baseUrl
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
+   baseUrl = response.geturl()
    link=response.read()
    response.close()
    
+   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
+   baseUrl = 'http://' + baseUrl + '/'
+   print "baseUrl=" + baseUrl
+
    # Find the #pages in the current category
    pages=re.compile( '<span class="page"> <a href=".+">(\d{1,2})<' ).findall( link)
 
@@ -937,14 +947,16 @@ def TV_Show_A_Z( url ):
 
 def TV_Show_Episode_List( url ):
    print "Tv Episode url = " + url
-   baseUrl = re.compile('www\.(.+)\.com').findall(url)[0]
-   baseUrl = 'http://www.'+baseUrl+'.com'
-   print "baseUrl=" + baseUrl
    req = urllib2.Request(url)
    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
    response = urllib2.urlopen(req)
+   baseUrl = response.geturl()
    link=response.read()
    response.close()
+
+   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
+   baseUrl = 'http://' + baseUrl + '/'
+   print "baseUrl=" + baseUrl
 
    match=re.compile('<img src=".+" alt=".+" /> <a href="(.+)">(.+)</a> <br />').findall( link )
    for movieUrl, title in match:
@@ -968,9 +980,11 @@ try:
 except:
         pass
 
-print "Mode: "+str(mode)
+print "MODE: "+str(mode)
 print "URL: "+str(url)
 print "Name: "+str(name)
+print "arg1: "+sys.argv[1]
+print "arg2: "+sys.argv[2]
 
 if mode==None or url==None or len(url)<1:
    Main_Categories()
