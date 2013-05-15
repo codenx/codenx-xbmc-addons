@@ -6,6 +6,7 @@ from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
 
 BASE_URL = "http://www.dishtamilonline.com/"
+COMEDY_URL = "http://cooltamil.com/browse-tamilcomedy-videos-1-date.html"
 
 net = Net()
 addon = Addon( 'plugin.video.oliyumoliyum', sys.argv )
@@ -23,7 +24,7 @@ def Load_Video( url ):
       return
 
    # Handle embed tags
-   sourceVideos = re.compile( '<embed(.+?)>').findall( html )
+   sourceVideos = re.compile( '<embed(.+?)>', flags=re.DOTALL).findall( html )
 
    # Handle iframe tags
    sourceVideos = sourceVideos + re.compile( '<iframe(.+?)>').findall( html )
@@ -34,6 +35,7 @@ def Load_Video( url ):
       
    partNo = 1
    prevSource = ''
+   foundVideo = False
    for sourceVideo in sourceVideos:
       print "sourceVideo=" + sourceVideo
       sourceVideo = re.compile( 'src=(?:\"|\')(.+?)(?:\"|\')' ).findall( sourceVideo )[0]
@@ -45,6 +47,9 @@ def Load_Video( url ):
 
       if 'dailymotion' in host:
          path = path.replace( 'embed/', '' )
+
+      if 'youtube' in host:
+         path = path.split( '&' )[0]
 
       host = host.replace( 'www.', '' )
       host = host.replace( '.com', '' )
@@ -58,7 +63,7 @@ def Load_Video( url ):
       title = sourceName + ' Part# ' + str( partNo )
 
       print "sourceName = " + sourceName
-      print "sourceVideo = " + sourceVideo
+      print "sourceVideo : " + sourceVideo
 
       hosted_media = urlresolver.HostedMediaFile( url=sourceVideo, title=sourceName )
       if not hosted_media:
@@ -67,8 +72,9 @@ def Load_Video( url ):
 
       addon.add_video_item( { 'url' : sourceVideo }, { 'title' : title } )
       partNo += 1
+      foundVideo = True
 
-   if partNo == 1:
+   if not foundVideo:
       addon.show_ok_dialog( [ 'No video source found!' ], title='Playback' )
    else:
       xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -143,23 +149,21 @@ def Main_Categories():
    print "Tv Serials=" + path
    addon.add_directory( { 'mode' : 'tv', 'url' : path }, { 'title' : '[B]TV Serials[/B]' } )
 
-   path = re.compile('<a href="(.+)"><b>Comedy</b>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = url + path
-   print "Comedy=" + path
-   addon.add_directory( { 'mode' : 'comedy', 'url' : path }, { 'title' : '[B]Comedy[/B]' } )
+   print "Comedy=" + COMEDY_URL
+   addon.add_directory( { 'mode' : 'comedy', 'url' : COMEDY_URL }, { 'title' : '[B]Comedy[/B]' } )
 
-   path = re.compile('<a href="(.+)"><b>Video Songs</b>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = url + path
-   print "Video Songs=" + path
-   addon.add_directory( { 'mode' : 'songs', 'url' : path }, { 'title' : '[B]Video Songs[/B]' } )
+   #path = re.compile('<a href="(.+)"><b>Video Songs</b>').findall(html)[ 0 ]
+   #if 'www' not in path:
+   #   path = url + path
+   #print "Video Songs=" + path
+   #addon.add_directory( { 'mode' : 'songs', 'url' : path }, { 'title' : '[B]Video Songs[/B]' } )
 
-   path = re.compile('<a href="(.+)"><b>Wallpaper</b>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = url + path
-   print "Wallpaper=" + path
-   addon.add_directory( { 'mode' : 'wallpaper', 'url' : path }, { 'title' : '[B]Wallpaper[/B]' } )
+   #path = re.compile('<a href="(.+)"><b>Wallpaper</b>').findall(html)[ 0 ]
+   #if 'www' not in path:
+   #   path = url + path
+   #print "Wallpaper=" + path
+   #addon.add_directory( { 'mode' : 'wallpaper', 'url' : path }, { 'title' : '[B]Wallpaper[/B]' } )
+
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
                        
 def Movie_Categories( url ):
@@ -364,6 +368,58 @@ def TV_Show_Episode_List( url ):
                            { 'title' : title } )
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
+def Comedy_Categories( url ):
+   print "category url = " + url
+   response = net.http_GET( url )
+   html = response.content
+   url = response.get_url()
+   print "url = " + url
+   
+   paths = re.compile('<li><a href="(.+?)">(\S+) \(\d+\)</a></li>').findall( html )
+   for loc, actor in paths:
+      print "loc=" + loc
+      print "actor=" + actor
+      addon.add_directory( { 'mode' : 'comedy_list', 'url' : loc }, { 'title' : '[B]%s[/B]' % actor } )
+
+   xbmcplugin.endOfDirectory(int(sys.argv[1]))
+                       
+def Comedy_List( url ):
+   print "comedy_list url = " + url
+   response = net.http_GET( url )
+   html = response.content
+   baseUrl = response.get_url()
+   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
+   baseUrl = 'http://' + baseUrl + '/'
+   print "baseUrl=" + baseUrl
+   
+   matches = re.compile('<a href="(.+?)">\s*<img src="(.+?)" alt="(.+?)".*/><div.*></div>\s*</a>').findall( html )
+   total_items = len( matches )
+
+   for ( path, thumbnail, title ) in matches:
+      if '(' in title:
+         title = title.split('(')[ 0 ]
+      addon.add_directory( { 'mode' : 'load_videos', 'url' : path }, { 'title' : '[B]%s[/B]' % title},
+                           img=thumbnail, total_items=total_items )
+
+   pages = re.compile('Page (\d+) of (\d+)').findall( html )[ 0 ]
+   pageNext = int( pages[ 0 ] )
+   pageLast = int( pages[ 1 ] )
+   print "page = " + pages[ 0 ] + " " + pages[ 1 ]
+   if pageNext < pageLast:
+      next = re.compile('%d</a><a href="(.+?)">next.*</a></div>' % pageLast).findall( html )
+      if next:
+         path = baseUrl + next[ 0 ]
+         addon.add_directory( { 'mode' : 'comedy_list', 'url' : path }, { 'title' : '[B]Page %d of %d >>>[/B]' % ( pageNext + 1, pageLast) } )
+      
+   xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+def Comedy_Video( url ):
+   print "comedy_list  url = " + url
+   response = net.http_GET( url )
+   html = response.content
+   url = response.get_url()
+   print "url = " + url
+   
 ##### Queries ##########
 mode = addon.queries['mode']
 url = addon.queries.get('url', None)
@@ -417,6 +473,15 @@ else:
 
    elif mode == 'load_videos':
       Load_Video( url )
+
+   elif mode == 'comedy':
+      Comedy_Categories( url )
+
+   elif mode == 'comedy_list':
+      Comedy_List( url )
+
+   elif mode == 'comedy_video':
+      Comedy_Video( url )
 
    elif mode == 2:
       Load_and_Play_Video( url, name )

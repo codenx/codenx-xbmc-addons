@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="1.0.8" provider-name="codenx">
+<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="1.0.9" provider-name="codenx">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
     <import addon="script.module.urlresolver" version="0.0.1"/>

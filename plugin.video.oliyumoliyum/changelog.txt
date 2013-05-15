@@ -33,3 +33,7 @@
 [B]Version v1.0.8[/B]
 
 - Use urlresolver and t0mm modules to resolve URL for hosted media.
+
+[B]Version v1.0.9[/B]
+
+- Add support for comedy clips
