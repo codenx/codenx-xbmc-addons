@@ -1,425 +1,240 @@
 import urllib, urllib2
-import xbmc, xbmcplugin, xbmcgui, xbmcaddon
-import re, sys
+import xbmcplugin, xbmcgui
+import re, sys, cgi
 import urlresolver
 from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
+from BeautifulSoup import BeautifulSoup
+#from pprint import pprint
 
-BASE_URL = "http://www.dishtamilonline.com/"
-COMEDY_URL = "http://cooltamil.com/browse-tamilcomedy-videos-1-date.html"
-
+BASE_URL = "http://www.tubetamil.com/"
 net = Net()
 addon = Addon( 'plugin.video.oliyumoliyum', sys.argv )
+
+def parseUl( ul ):
+   result = {}
+   for li in ul.findAll( 'li', recursive=False ):
+      key = li.span.text
+      url = li.a[ 'href' ]
+      u = li.find( 'ul' )
+      if key == 'Comedy':
+         result[ key ] = url
+      elif u:
+         result[ key ] = parseUl( u )
+      else:
+         result[ key ] = url
+   return result
+
+def parseDailymotion( url ):
+   link = urllib2.urlparse.urlsplit( url )
+   nloc = link.netloc
+   path = link.path
+   path = path.replace( 'embed/', '' )
+   video = [ 'http://' + nloc + path ]
+   return video
+
+def parseYoutube( url ):
+   videos = []
+   link = urllib2.urlparse.urlsplit( url )
+   query = link.query
+   netloc = link.netloc
+   path = link.path
+
+   print "PT url : " + url
+
+   def parseYoutubePlaylist( playlistId ):
+      videos = []
+      yturl = 'http://gdata.youtube.com/feeds/api/playlists/' + playlistId
+      response = net.http_GET( yturl )
+      html = response.content
+      soup = BeautifulSoup( html )
+
+      for video in soup.findChildren( 'media:player' ):
+         videoUrl = str( video[ 'url' ] )
+         print "PTL video : " + videoUrl
+         videos += parseYoutube( videoUrl )
+      print videos
+      return videos
+
+   # Find v=xxx in query if present
+   qv = ''
+   if query:
+      qs = cgi.parse_qs( query )
+      qv = qs.get( 'v', [''] )[ 0 ]
+      if qv:
+         qv = '?v=' + qv
+   
+   # Handle youtube gdata links
+   playlistId = ''
+   if re.search( '\?list=PL', url ):
+      playlistId = re.compile("\?list=PL(.+?)&").findall( url )[ 0 ]
+   elif re.search( '\?list=', url ):
+      playlistId = re.compile("\?list=(.+?)&").findall( url )[ 0 ]
+   elif re.search( '/p/', url ):
+      playlistId = re.compile("/p/(.+?)(?:/|\?|&)").findall( url )[ 0 ]
+   elif re.search( 'view_play_list', url ):
+      plyalistId = re.compile("view_play_list\?.*?&amp;p=(.+?)&").findall( url)[ 0 ]
+
+   if playlistId:
+      print "playlistId : " + playlistId
+      videos += parseYoutubePlaylist( playlistId )
+   else:
+      videos += [ 'http://' + netloc + path + qv ]
+   return videos
 
 def Load_Video( url ):
    print "Load_Video=" + url
    html = net.http_GET( url ).content
-   sources = []
-
-   # Handle youtube gdata links
-   if re.search( 'http://gdata.youtube.com', html ):
-      print "gdata"
-      playListID = re.compile( 'http://gdata.youtube.com/feeds/api/playlists/(.+?)\'' ).findall( html )[0]
-      #youTubeGetPlayList( playListID, '', 'Source #1 Youtube', 'Part' )
-      return
+   sourceVideos = []
 
    # Handle embed tags
-   sourceVideos = re.compile( '<embed(.+?)>', flags=re.DOTALL).findall( html )
+   sourceVideos += re.compile( '<embed(.+?)>', flags=re.DOTALL).findall( html )
 
    # Handle iframe tags
-   sourceVideos = sourceVideos + re.compile( '<iframe(.+?)>').findall( html )
+   sourceVideos += re.compile( '<iframe(.+?)>').findall( html )
+
+   # Handle Youtube new window
+   src = re.compile( 'onclick="window.open\((.+?),' ).findall( html )
+   if src:
+      sourceVideos += [ 'src=' + src[ 0 ] ]
 
    if len( sourceVideos ) == 0:
       print "No video sources found!!!!"
       return
       
-   partNo = 1
-   prevSource = ''
-   foundVideo = False
+   videoItem = []
    for sourceVideo in sourceVideos:
       print "sourceVideo=" + sourceVideo
       sourceVideo = re.compile( 'src=(?:\"|\')(.+?)(?:\"|\')' ).findall( sourceVideo )[0]
       sourceVideo = urllib.unquote( sourceVideo )
+      print "sourceVideo=" + sourceVideo
       link = urllib2.urlparse.urlsplit( sourceVideo )
       host = link.hostname
-      nloc = link.netloc
-      path = link.path
-
-      if 'dailymotion' in host:
-         path = path.replace( 'embed/', '' )
-
-      if 'youtube' in host:
-         path = path.split( '&' )[0]
-
       host = host.replace( 'www.', '' )
       host = host.replace( '.com', '' )
       sourceName = host.capitalize()
 
-      if sourceName != prevSource:
-         partNo = 1
-         prevSource = sourceName
+      if 'dailymotion' in host:
+         sourceVideo = parseDailymotion( sourceVideo )
 
-      sourceVideo = 'http://' + nloc + path
-      title = sourceName + ' Part# ' + str( partNo )
+      elif 'youtube' in host:
+         sourceVideo = parseYoutube( sourceVideo )
 
-      print "sourceName = " + sourceName
-      print "sourceVideo : " + sourceVideo
+      else:
+         sourceVideo = [ sourceVideo ]
 
-      hosted_media = urlresolver.HostedMediaFile( url=sourceVideo, title=sourceName )
-      if not hosted_media:
-         print "Skipping video " + sourceName
-         continue
+      for video in sourceVideo:
+         print "sourceName = " + sourceName
+         print "sourceVideo : " + video
+         hosted_media = urlresolver.HostedMediaFile( url=video, title=sourceName )
+         if not hosted_media:
+            print "Skipping video " + sourceName
+            continue
+         videoItem.append( (video, sourceName, hosted_media ) )
 
-      addon.add_video_item( { 'url' : sourceVideo }, { 'title' : title } )
-      partNo += 1
-      foundVideo = True
-
-   if not foundVideo:
+   if len( videoItem ) == 0:
       addon.show_ok_dialog( [ 'No video source found!' ], title='Playback' )
+   elif len(videoItem) == 1:
+      url, title, hosted_media = videoItem[ 0 ]
+      stream_url = hosted_media.resolve()
+      print "stream_url " + stream_url
+
+      pDialog = xbmcgui.DialogProgress()
+      pDialog.create('Opening stream ' + title)
+
+      playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+      playlist.clear()
+      listitem = xbmcgui.ListItem(title)
+      playlist.add(stream_url, listitem)
+      xbmc.Player(xbmc.PLAYER_CORE_AUTO).play(playlist)
    else:
+      partNo = 1
+      prevSource = ''
+      for sourceVideo, sourceName, _ in videoItem:
+         if sourceName != prevSource:
+            partNo = 1
+            prevSource = sourceName
+
+         title = sourceName + ' Part# ' + str( partNo )
+         addon.add_video_item( { 'url' : sourceVideo }, { 'title' : title } )
+         partNo += 1
+
       xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def Load_and_Play_Video(url,name):
-   ok=True
-   print "Load_and_Play_Video:" + url
-   videoUrl = Play_Video(url,name,True,False)
-   if videoUrl == None:
-     d = xbmcgui.Dialog()
-     d.ok('NO VIDEO FOUND', 'This video was removed due to copyright issue.','Check other links.')
-     return False
-   xbmcPlayer = xbmc.Player()
-   xbmcPlayer.play(videoUrl)
-   return ok
-
-def Load_and_Play_Video_Links(url,name):
-   #xbmc.executebuiltin("XBMC.Notification(PLease Wait!,Loading video links into XBMC Media Player,5000)")
-   print "mode 3"
-   ok=True
-   playList = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-   playList.clear()
-   #time.sleep(2)
-   links = url.split(':;')
-   print links
-
-   pDialog = xbmcgui.DialogProgress()
-   ret = pDialog.create('Loading playlist...')
-   totalLinks = len(links)
-   loadedLinks = 0
-   remaining_display = 'Videos loaded :: [B]'+str(loadedLinks)+' / '+str(totalLinks)+'[/B] into XBMC player playlist.'
-   pDialog.update(0,'Please wait for the process to retrieve video link.',remaining_display)
-
-   for videoLink in links:
-       print "loading " + videoLink
-       Play_Video(videoLink,name,True,True)
-
-       loadedLinks = loadedLinks + 1
-       percent = (loadedLinks * 100)/totalLinks
-       #print percent
-       remaining_display = 'Videos loaded :: [B]'+str(loadedLinks)+' / '+str(totalLinks)+'[/B] into XBMC player playlist.'
-       pDialog.update(percent,'Please wait for the process to retrieve video link.',remaining_display)
-       if (pDialog.iscanceled()):
-          return False
-   xbmcPlayer = xbmc.Player()
-   xbmcPlayer.play(playList)
-   if not xbmcPlayer.isPlayingVideo():
-       d = xbmcgui.Dialog()
-       d.ok('INVALID VIDEO PLAYLIST', 'The playlist videos were removed due to copyright issue.','Check other links.')
-   return ok
 
 def Main_Categories():
    response = net.http_GET( BASE_URL )
    html = response.content
    url = response.get_url()
    
-   path = re.compile('<a href="(.+)"><b>Movies</b>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = url + path
-   print "Movies=" + path
-   addon.add_directory( { 'mode' : 'movies', 'url' : path }, { 'title' : '[B]Movies[/B]' } )
+   soup = BeautifulSoup( html )
+   div = soup.find( 'div', { 'id' : 'mainmenu' } )
+   tubeIndex = parseUl( div.ul )
+   #print 'TubeIndex:'
+   #pprint(tubeIndex, width=1)
 
-   path = re.compile('<a href="(.+)"><b>TV Shows</b>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = url + path
-   print "Tv Shows=" + path
-   addon.add_directory( { 'mode' : 'tv', 'url' : path }, { 'title' : '[B]TV Shows[/B]' } )
-
-   path = re.compile('<a href="(.+)"><b>TV Serials</b>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = url + path
-   print "Tv Serials=" + path
-   addon.add_directory( { 'mode' : 'tv', 'url' : path }, { 'title' : '[B]TV Serials[/B]' } )
-
-   print "Comedy=" + COMEDY_URL
-   addon.add_directory( { 'mode' : 'comedy', 'url' : COMEDY_URL }, { 'title' : '[B]Comedy[/B]' } )
-
-   #path = re.compile('<a href="(.+)"><b>Video Songs</b>').findall(html)[ 0 ]
-   #if 'www' not in path:
-   #   path = url + path
-   #print "Video Songs=" + path
-   #addon.add_directory( { 'mode' : 'songs', 'url' : path }, { 'title' : '[B]Video Songs[/B]' } )
-
-   #path = re.compile('<a href="(.+)"><b>Wallpaper</b>').findall(html)[ 0 ]
-   #if 'www' not in path:
-   #   path = url + path
-   #print "Wallpaper=" + path
-   #addon.add_directory( { 'mode' : 'wallpaper', 'url' : path }, { 'title' : '[B]Wallpaper[/B]' } )
+   for key, value in sorted( tubeIndex.items() ):
+      if key == 'Comedy':
+         mode = 'leaf'
+         path = value
+      elif type( value ) != dict:
+         continue
+      else:
+         mode = 'tree'
+         path = key
+      addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key } )
 
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
                        
-def Movie_Categories( url ):
-   print "Movie url = " + url
-   response = net.http_GET( url )
+def Main_Tree( url ):
+   print "tree:" + url
+   response = net.http_GET( BASE_URL )
    html = response.content
-   baseUrl = response.get_url()
-   print "baseUrl=" + baseUrl
+   soup = BeautifulSoup( html )
+   div = soup.find( 'div', { 'id' : 'mainmenu' } )
+   li = div.ul.find( 'span', text=url ).parent.parent.parent
+   tubeIndex = parseUl( li.ul )
 
-   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
-   baseUrl = 'http://' + baseUrl + '/'
-   print "baseUrl=" + baseUrl
-
-   path = re.compile('<a href="(.+)">New Movies</a>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = baseUrl + path
-   addon.add_directory( { 'mode' : 'movies_sort', 'url' : path }, 
-                        { 'title' : ' [B]New Movies[/B]' } )
-
-   path = re.compile('<a href="(.+)">DvD Movies</a>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = baseUrl + path
-   addon.add_directory( { 'mode' : 'movies_sort', 'url' : path }, 
-                        { 'title' : ' [B]DVD Movies[/B]' } )
-
-   path = re.compile('<a href="(.+)">Classic Movies</a>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = baseUrl + path
-   addon.add_directory( { 'mode' : 'movies_sort', 'url' : path }, 
-                        { 'title' : ' [B]Classic Movies[/B]' } )
-
-   path = re.compile('<a href="(.+)">Mid Movies</a>').findall(html)[ 0 ]
-   if 'www' not in path:
-      path = baseUrl + path
-   addon.add_directory( { 'mode' : 'movies_sort', 'url' : path }, 
-                        { 'title' : ' [B]Mid Movies[/B]',  } )
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def Movie_Sort_Order( url ):
-   print "Movie sort url = " + url
-   url = url.replace( "&alp=all", "" )
-   print "Sort Order:" + url
-
-   addon.add_directory( { 'mode' : 'movies_list', 'url' : url + '&sort=date&page=1' },
-                        { 'title' : ' [B]Recently Added[/B]',  } )
-   addon.add_directory( { 'mode' : 'movies_list', 'url' : url + '&sort=views&page=1' },
-                        { 'title' : ' [B]Most Viewed[/B]',  } )
-   addon.add_directory( { 'mode' : 'movies_az', 'url' : url },
-                        { 'title' : ' [B]Sort Alphabetically[/B]',  } )
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def Movie_List( url ):
-   print "Movie list url = " + url
-   response = net.http_GET( url )
-   html = response.content
-   baseUrl = response.get_url()
-   print "baseUrl=" + baseUrl
-
-   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
-   baseUrl = 'http://' + baseUrl + '/'
-   print "baseUrl=" + baseUrl
-
-   # Find the #pages in the current category
-   pages=re.compile( '<span class="page"> <a href=".+">(\d{1,2})<' ).findall( html )
-
-   # Find the movies in the current category
-   match=re.compile('<img src="(.+)" alt=".*" width=".*" height=".*" style=".*" title=".*" onMouseOver=".+"\nonmouseout=".*"></a><br />\n\s+<a href="(.+)">(.+)</a><br />').findall(html)
-   total_items = len( match ) + len( pages ) * len( match )
-   for thumbnail, movieUrl, name in match:
-      addon.add_directory( { 'mode' : 'movies_videos', 'url' : baseUrl + "/" + movieUrl },
-                           { 'title' : name },
-                           img=baseUrl + thumbnail, total_items=total_items )
-
-   url = url.replace( "&page=1", "&page=" )
-   print "List url:" + url, "#pages=" + str( len( pages ) )
-   # Scrape pages 1-->5, there's about 50 movies in 5 pages
-   for page in pages:
-      rurl = url + page
-      print "Access URL=" + rurl
-      html = net.http_GET( rurl ).content
-      match=re.compile('<img src="(.+)" alt=".*" width=".*" height=".*" style=".*" title=".*" onMouseOver=".+"\nonmouseout=".*"></a><br />\n\s+<a href="(.+)">(.+)</a><br />').findall(html)
-      for thumbnail, movieUrl, name in match:
-         addon.add_directory( { 'mode' : 'movies_videos', 'url' : baseUrl + "/" + movieUrl },
-                              { 'title' : name },
-                              img=baseUrl + thumbnail )
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def Movie_A_Z( url ):
-   print "A-Z Viewed:" + url
-   sortPages = []
-   sortPages.append('#')
-   for c in range( ord('A'), ord('Z')+1 ):
-      sortPages.append( chr(c) )
-   sortPages.append('all')
-   print "pages:" 
-   print sortPages
-
-   # Scrape pages 1-->5, there's about 50 movies in 5 pages
-   for page in sortPages:
-      rurl = url + '&alp=' + page + '&page=1'
-      Add_Dir( page, rurl, 12, '' )
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def Movies_Video_Link( url ):
-   print "Video Link=" + url
-   response = net.http_GET( url )
-   html = response.content
-   baseUrl = response.get_url()
-   print "baseUrl=" + baseUrl
-
-   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
-   baseUrl = 'http://' + baseUrl + '/'
-   print "baseUrl=" + baseUrl
-
-   match=re.compile('<img src=".*" alt=".*" /> <a href="(.*)">Full Movie.*</a> <br />').findall(html)
-   print match
-   videoUrl = baseUrl + match[0]
-   print "Video URL=" + videoUrl
-
-   Load_Video( videoUrl )
-
-def TV_Show_Sort_Order( url ):
-   print "TV url = " + url
-   url = url.replace( "&alp=all", "" )
-   print "Sort Order:" + url
-
-   addon.add_directory( { 'mode' : 'tv_list', 'url' : url + '&sort=date&page=1' },
-                        { 'title' : ' [B]Recently Added[/B]',  } )
-   addon.add_directory( { 'mode' : 'tv_list', 'url' : url + '&sort=views&page=1' },
-                        { 'title' : ' [B]Most Viewed[/B]',  } )
-   addon.add_directory( { 'mode' : 'tv_az', 'url' : url },
-                        { 'title' : ' [B]Sort Alphabetically[/B]',  } )
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def TV_Show_List( url ):
-   print "TV list url = " + url
-   response = net.http_GET( url )
-   html = response.content
-   baseUrl = response.get_url()
-   print "baseUrl=" + baseUrl
-
-   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
-   baseUrl = 'http://' + baseUrl + '/'
-   print "baseUrl=" + baseUrl
-
-   # Find the #pages in the current category
-   pages=re.compile( '<span class="page"> <a href=".+">(\d{1,2})<' ).findall( html )
-
-   # Find the movies in the current category
-   match=re.compile('<a href="(.+)">(.+)</a> <br />\n\s+<a href=".+"><img src="(.+)" width').findall( html )
-   total_items = len( match ) + len( pages ) * len( match )
-   for tvUrl, name, thumbnail in match:
-      addon.add_directory( { 'mode' : 'tv_videos', 'url' : baseUrl + "/" + tvUrl },
-                           { 'title' : name },
-                           img=baseUrl + thumbnail, total_items=total_items )
-
-   url = url.replace( "&page=1", "&page=" )
-   print "List url:" + url, "#pages=" + str( len( pages ) )
-   # Scrape pages 1-->5, there's about 50 movies in 5 pages
-   for page in pages:
-      rurl = url + page
-      print "Access URL=" + rurl
-      html = net.http_GET( rurl ).content
-
-      match=re.compile('<a href="(.+)">(.+)</a> <br />\n\s+<a href=".+"><img src="(.+)" width').findall( html )
-      for tvUrl, name, thumbnail in match:
-         addon.add_directory( { 'mode' : 'tv_videos', 'url' : baseUrl + "/" + tvUrl },
-                              { 'title' : name },
-                              img=baseUrl + thumbnail, total_items=total_items )
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def TV_Show_A_Z( url ):
-   print "A-Z Viewed:" + url
-   sortPages = []
-   sortPages.append('0')
-   for c in range( ord('A'), ord('Z')+1 ):
-      sortPages.append( chr(c) )
-   sortPages.append('all')
-   print "pages:"
-   print sortPages
-
-   # Scrape pages 1-->5, there's about 50 movies in 5 pages
-   for page in sortPages:
-      rurl = url + '&alp=' + page + '&page=1'
-      Add_Dir( page, rurl, 22, '' )
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def TV_Show_Episode_List( url ):
-   print "Tv Episode url = " + url
-   response = net.http_GET( url )
-   html = response.content
-   baseUrl = response.get_url()
-   print "baseUrl=" + baseUrl
-
-   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
-   baseUrl = 'http://' + baseUrl + '/'
-   print "baseUrl=" + baseUrl
-
-   match=re.compile('<img src=".+" alt=".+" /> <a href="(.+)">(.+)</a> <br />').findall( html )
-   for tvUrl, title in match:
-      addon.add_directory( { 'mode' : 'load_videos', 'url' : baseUrl + "/" + tvUrl },
-                           { 'title' : title } )
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-def Comedy_Categories( url ):
-   print "category url = " + url
-   response = net.http_GET( url )
-   html = response.content
-   url = response.get_url()
-   print "url = " + url
-   
-   paths = re.compile('<li><a href="(.+?)">(\S+) \(\d+\)</a></li>').findall( html )
-   for loc, actor in paths:
-      print "loc=" + loc
-      print "actor=" + actor
-      addon.add_directory( { 'mode' : 'comedy_list', 'url' : loc }, { 'title' : '[B]%s[/B]' % actor } )
-
-   xbmcplugin.endOfDirectory(int(sys.argv[1]))
-                       
-def Comedy_List( url ):
-   print "comedy_list url = " + url
-   response = net.http_GET( url )
-   html = response.content
-   baseUrl = response.get_url()
-   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
-   baseUrl = 'http://' + baseUrl + '/'
-   print "baseUrl=" + baseUrl
-   
-   matches = re.compile('<a href="(.+?)">\s*<img src="(.+?)" alt="(.+?)".*/><div.*></div>\s*</a>').findall( html )
-   total_items = len( matches )
-
-   for ( path, thumbnail, title ) in matches:
-      if '(' in title:
-         title = title.split('(')[ 0 ]
-      addon.add_directory( { 'mode' : 'load_videos', 'url' : path }, { 'title' : '[B]%s[/B]' % title},
-                           img=thumbnail, total_items=total_items )
-
-   pages = re.compile('Page (\d+) of (\d+)').findall( html )[ 0 ]
-   pageNext = int( pages[ 0 ] )
-   pageLast = int( pages[ 1 ] )
-   print "page = " + pages[ 0 ] + " " + pages[ 1 ]
-   if pageNext < pageLast:
-      next = re.compile('%d</a><a href="(.+?)">next.*</a></div>' % pageLast).findall( html )
-      if next:
-         path = baseUrl + next[ 0 ]
-         addon.add_directory( { 'mode' : 'comedy_list', 'url' : path }, { 'title' : '[B]Page %d of %d >>>[/B]' % ( pageNext + 1, pageLast) } )
+   for key, value in sorted( tubeIndex.items() ):
+      if type( value ) != dict:
+         mode = 'leaf'
+         path = value
+      else:
+         mode = 'tree'
+         path = key
+      addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key } )
       
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
-def Comedy_Video( url ):
-   print "comedy_list  url = " + url
+def Main_Leaf( url ):
+   print "leaf:" + url
    response = net.http_GET( url )
    html = response.content
-   url = response.get_url()
-   print "url = " + url
-   
+   baseUrl = response.get_url()
+   print "baseUrl=" + baseUrl
+
+   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
+   baseUrl = 'http://' + baseUrl + '/'
+   print "baseUrl=" + baseUrl
+
+   soup = BeautifulSoup( html )
+   div = soup.findAll( 'div', { 'class' : 'video' } )
+   for d in div:
+      video = d.find( 'div', { 'class' : 'thumb' } )
+      url = video.a[ 'href' ]
+      title = video.a[ 'title' ]
+      img = video.img[ 'src' ]
+
+      addon.add_directory( { 'mode' : 'load_videos', 'url' : url }, { 'title' : title.encode('utf-8')}, 
+                           img=img, total_items=len(div) )
+
+   pages = soup.find( 'ul', { 'class' : 'page_navi' } )
+   nextPage = pages.find( 'li', { 'class' : 'next' } )
+   if nextPage:
+      nextPageUrl = nextPage.a[ 'href' ]
+      addon.add_directory( { 'mode' : 'leaf', 'url' : nextPageUrl }, { 'title' : '[B]Next Page...[/B]' } )
+
+   xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
 ##### Queries ##########
 mode = addon.queries['mode']
 url = addon.queries.get('url', None)
@@ -447,48 +262,12 @@ else:
    if mode == 'main':
       Main_Categories()
           
-   elif mode == 'movies':
-      Movie_Categories( url )
+   elif mode == 'tree':
+      Main_Tree( url )
 
-   elif mode == 'movies_sort':
-      Movie_Sort_Order( url )
-
-   elif mode == 'movies_list':
-      Movie_List( url )
-
-   elif mode == 'movies_az':
-      Movie_A_Z( url )
-
-   elif mode == 'movies_videos':
-      Movies_Video_Link( url )
-
-   elif mode == 'tv':
-      TV_Show_Sort_Order( url )
-
-   elif mode == 'tv_list':
-      TV_Show_List( url )
-
-   elif mode == 'tv_videos':
-      TV_Show_Episode_List( url )
+   elif mode == 'leaf':
+      Main_Leaf( url )
 
    elif mode == 'load_videos':
       Load_Video( url )
-
-   elif mode == 'comedy':
-      Comedy_Categories( url )
-
-   elif mode == 'comedy_list':
-      Comedy_List( url )
-
-   elif mode == 'comedy_video':
-      Comedy_Video( url )
-
-   elif mode == 2:
-      Load_and_Play_Video( url, name )
-
-   elif mode == 3:
-      Load_and_Play_Video_Links( url, name )
-
-   elif mode == 23:
-      TV_Show_A_Z( url )
 

@@ -37,3 +37,12 @@
 [B]Version v1.0.9[/B]
 
 - Add support for comedy clips
+
+[B]Version v2.0.0[/B]
+
+- Switched source for content
+- More menu options to choose content from
+- Switched comedy content to tubetamil
+- Improved handling of youtube/dailymotion videos
+- Saved an extra menu click when content is hosted in only one server
+
