@@ -7,23 +7,39 @@ from t0mm0.common.net import Net
 from BeautifulSoup import BeautifulSoup
 #from pprint import pprint
 
+try:
+  import StorageServer
+except:
+  import storageserverdummy as StorageServer
+
 BASE_URL = "http://www.tubetamil.com/"
 net = Net()
-addon = Addon( 'plugin.video.oliyumoliyum', sys.argv )
+addonId = 'plugin.video.oliyumoliyum'
+addon = Addon( addonId, sys.argv )
+cache = StorageServer.StorageServer( addonId )
 
-def parseUl( ul ):
-   result = {}
-   for li in ul.findAll( 'li', recursive=False ):
-      key = li.span.text
-      url = li.a[ 'href' ]
-      u = li.find( 'ul' )
-      if key == 'Comedy':
-         result[ key ] = url
-      elif u:
-         result[ key ] = parseUl( u )
-      else:
-         result[ key ] = url
-   return result
+def parseMainPage():
+   def parseUl( ul ):
+      result = {}
+      for li in ul.findAll( 'li', recursive=False ):
+         key = li.span.text
+         url = li.a[ 'href' ]
+         u = li.find( 'ul' )
+         if key == 'Comedy':
+            result[ key ] = url
+         elif u:
+            result[ key ] = parseUl( u )
+         else:
+            result[ key ] = url
+      return result
+
+   url = "http://www.tubetamil.com"
+   response = net.http_GET( url )
+   html = response.content
+   soup = BeautifulSoup( html )
+   div = soup.find( 'div', { 'id' : 'mainmenu' } )
+   tubeIndex = parseUl( div.ul )
+   return tubeIndex
 
 def parseDailymotion( url ):
    link = urllib2.urlparse.urlsplit( url )
@@ -40,20 +56,25 @@ def parseYoutube( url ):
    netloc = link.netloc
    path = link.path
 
-   print "PT url : " + url
+   print "youtube url : " + url
 
    def parseYoutubePlaylist( playlistId ):
       videos = []
       yturl = 'http://gdata.youtube.com/feeds/api/playlists/' + playlistId
-      response = net.http_GET( yturl )
-      html = response.content
+      try:
+         response = net.http_GET( yturl )
+         html = response.content
+      except urllib2.HTTPError, e:
+         print "HTTPError : " + str( e )
+         return videos
+
       soup = BeautifulSoup( html )
+      print soup.prettify()
 
       for video in soup.findChildren( 'media:player' ):
          videoUrl = str( video[ 'url' ] )
-         print "PTL video : " + videoUrl
+         print "yourube video : " + videoUrl
          videos += parseYoutube( videoUrl )
-      print videos
       return videos
 
    # Find v=xxx in query if present
@@ -100,6 +121,7 @@ def Load_Video( url ):
 
    if len( sourceVideos ) == 0:
       print "No video sources found!!!!"
+      addon.show_ok_dialog( [ 'Page has unsupported video' ], title='Playback' )
       return
       
    videoItem = []
@@ -133,7 +155,7 @@ def Load_Video( url ):
          videoItem.append( (video, sourceName, hosted_media ) )
 
    if len( videoItem ) == 0:
-      addon.show_ok_dialog( [ 'No video source found!' ], title='Playback' )
+      addon.show_ok_dialog( [ 'Video does not exist' ], title='Playback' )
    elif len(videoItem) == 1:
       url, title, hosted_media = videoItem[ 0 ]
       stream_url = hosted_media.resolve()
@@ -162,13 +184,7 @@ def Load_Video( url ):
       xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def Main_Categories():
-   response = net.http_GET( BASE_URL )
-   html = response.content
-   url = response.get_url()
-   
-   soup = BeautifulSoup( html )
-   div = soup.find( 'div', { 'id' : 'mainmenu' } )
-   tubeIndex = parseUl( div.ul )
+   tubeIndex = cache.cacheFunction( parseMainPage )
    #print 'TubeIndex:'
    #pprint(tubeIndex, width=1)
 
@@ -186,13 +202,11 @@ def Main_Categories():
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
                        
 def Main_Tree( url ):
-   print "tree:" + url
-   response = net.http_GET( BASE_URL )
-   html = response.content
-   soup = BeautifulSoup( html )
-   div = soup.find( 'div', { 'id' : 'mainmenu' } )
-   li = div.ul.find( 'span', text=url ).parent.parent.parent
-   tubeIndex = parseUl( li.ul )
+   print "tree:" + url + ":"
+   tubeIndex = cache.cacheFunction( parseMainPage )
+   path = url.split( '&' )
+   for key in path:
+      tubeIndex = tubeIndex[ key ]
 
    for key, value in sorted( tubeIndex.items() ):
       if type( value ) != dict:
@@ -200,7 +214,7 @@ def Main_Tree( url ):
          path = value
       else:
          mode = 'tree'
-         path = key
+         path = url + '&' + key
       addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key } )
       
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -209,13 +223,6 @@ def Main_Leaf( url ):
    print "leaf:" + url
    response = net.http_GET( url )
    html = response.content
-   baseUrl = response.get_url()
-   print "baseUrl=" + baseUrl
-
-   baseUrl = urllib2.urlparse.urlsplit(baseUrl).netloc
-   baseUrl = 'http://' + baseUrl + '/'
-   print "baseUrl=" + baseUrl
-
    soup = BeautifulSoup( html )
    div = soup.findAll( 'div', { 'class' : 'video' } )
    for d in div:
@@ -258,6 +265,7 @@ if play:
       addon.resolve_url(stream_url)
    else:
       print "unable to resolve"
+      addon.show_ok_dialog( [ 'Unknown hosted video' ], title='Playback' )
 else:
    if mode == 'main':
       Main_Categories()

@@ -46,3 +46,8 @@
 - Improved handling of youtube/dailymotion videos
 - Saved an extra menu click when content is hosted in only one server
 
+[B]Version v2.0.1[/B]
+
+- Cache menu options to improve speed
+- Throw an error message to user when youtube playlist does not exist
+
