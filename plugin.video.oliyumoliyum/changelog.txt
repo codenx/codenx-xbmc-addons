@@ -51,3 +51,7 @@
 - Cache menu options to improve speed
 - Throw an error message to user when youtube playlist does not exist
 
+[B]Version v2.0.2[/B]
+
+- Fix dailymotion videos, use plugin instead of urlresolver
+

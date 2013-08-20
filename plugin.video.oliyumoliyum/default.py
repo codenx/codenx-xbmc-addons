@@ -1,11 +1,16 @@
 import urllib, urllib2
-import xbmcplugin, xbmcgui
+import xbmcplugin, xbmcgui, xbmc
 import re, sys, cgi
 import urlresolver
 from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
 from BeautifulSoup import BeautifulSoup
 #from pprint import pprint
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 try:
   import StorageServer
@@ -17,6 +22,7 @@ net = Net()
 addonId = 'plugin.video.oliyumoliyum'
 addon = Addon( addonId, sys.argv )
 cache = StorageServer.StorageServer( addonId )
+cache.dbg = True
 
 def parseMainPage():
    def parseUl( ul ):
@@ -42,13 +48,50 @@ def parseMainPage():
    return tubeIndex
 
 def parseDailymotion( url ):
+   videos = []
    link = urllib2.urlparse.urlsplit( url )
-   nloc = link.netloc
+   netloc = link.netloc
    path = link.path
-   path = path.replace( 'embed/', '' )
-   video = [ 'http://' + nloc + path ]
-   return video
 
+   print "dailymotion url : " + url
+
+   def parseDailymotionPlaylist( playlistId ):
+      videos = []
+      dlurl = 'https://api.dailymotion.com/playlist/' + playlistId + '/videos'
+      try:
+         response = net.http_GET( dlurl )
+         html = response.content
+      except urllib2.HTTPError, e:
+         print "HTTPError : " + str( e )
+         return videos
+
+      jsonObj = json.loads( html )
+      for video in jsonObj['list']:
+         videos.append( 'http://www.dailmotion.com/video/' + str(video['id']) )
+      return videos
+         
+   # Handle playlists
+   playlistId = ''
+   if 'jukebox' in url:
+      playlistId = re.compile("\?list[\]\=\%2Fplaylist\%2F(.+?)&").findall( url )[ 0 ]
+   elif 'playlist' in url:
+      playlistId = re.compile("playlist/(.+?)_").findall( url )[ 0 ]
+   elif 'video/' in url:
+      videoId = re.compile("video/(.+)").findall( path )[ 0 ]
+      videoId = videoId.split( '_' )[ 0 ]
+   elif 'swf' in url:
+      videoId = re.compile("swf/(.+)").findall( path )[ 0 ]
+   else:
+      print "unknown dailymotion link"
+      return videos
+
+   if playlistId:
+      print "playlistId : " + playlistId
+      videos += parseDailymotionPlaylist( playlistId )
+   else:
+      videos += [ 'http://' + netloc + '/' + videoId ]
+   return videos
+      
 def parseYoutube( url ):
    videos = []
    link = urllib2.urlparse.urlsplit( url )
@@ -69,11 +112,10 @@ def parseYoutube( url ):
          return videos
 
       soup = BeautifulSoup( html )
-      print soup.prettify()
 
       for video in soup.findChildren( 'media:player' ):
          videoUrl = str( video[ 'url' ] )
-         print "yourube video : " + videoUrl
+         print "youtube video : " + videoUrl
          videos += parseYoutube( videoUrl )
       return videos
 
@@ -135,30 +177,42 @@ def Load_Video( url ):
       host = host.replace( 'www.', '' )
       host = host.replace( '.com', '' )
       sourceName = host.capitalize()
+      print "sourceName = " + sourceName
 
       if 'dailymotion' in host:
          sourceVideo = parseDailymotion( sourceVideo )
+         for video in sourceVideo:
+            print "sourceVideo : " + video
+            videoId = re.compile('dailymotion\.com/(.+)').findall( video )[ 0 ]
+            video = 'plugin://plugin.video.dailymotion_com/?mode=playVideo&url=' + videoId
+            videoItem.append( (video, sourceName, video ) )
 
       elif 'youtube' in host:
          sourceVideo = parseYoutube( sourceVideo )
+         for video in sourceVideo:
+            print "sourceVideo : " + video
+            hosted_media = urlresolver.HostedMediaFile( url=video, title=sourceName )
+            if not hosted_media:
+               print "Skipping video " + sourceName
+               continue
+            videoItem.append( (video, sourceName, hosted_media ) )
 
       else:
-         sourceVideo = [ sourceVideo ]
-
-      for video in sourceVideo:
-         print "sourceName = " + sourceName
-         print "sourceVideo : " + video
-         hosted_media = urlresolver.HostedMediaFile( url=video, title=sourceName )
+         print "sourceVideo : " + sourceVideo
+         hosted_media = urlresolver.HostedMediaFile( url=sourceVideo, title=sourceName )
          if not hosted_media:
             print "Skipping video " + sourceName
             continue
-         videoItem.append( (video, sourceName, hosted_media ) )
+         videoItem.append( (sourceVideo, sourceName, hosted_media ) )
 
    if len( videoItem ) == 0:
       addon.show_ok_dialog( [ 'Video does not exist' ], title='Playback' )
    elif len(videoItem) == 1:
       url, title, hosted_media = videoItem[ 0 ]
-      stream_url = hosted_media.resolve()
+      if 'dailymotion' in url:
+         stream_url = url
+      else:
+         stream_url = hosted_media.resolve()
       print "stream_url " + stream_url
 
       pDialog = xbmcgui.DialogProgress()
@@ -185,6 +239,7 @@ def Load_Video( url ):
 
 def Main_Categories():
    tubeIndex = cache.cacheFunction( parseMainPage )
+   print "size = ", len(repr(tubeIndex))
    #print 'TubeIndex:'
    #pprint(tubeIndex, width=1)
 
@@ -256,12 +311,18 @@ print "arg1: "+sys.argv[1]
 print "arg2: "+sys.argv[2]
 
 if play:
-   hosted_media = urlresolver.HostedMediaFile( url=url, title=name )
-   print "hosted_media"
-   print hosted_media
-   if hosted_media:
-      stream_url = hosted_media.resolve()
-      print stream_url
+   stream_url = None
+   if 'dailymotion' in url:
+      stream_url = url
+   else:
+      hosted_media = urlresolver.HostedMediaFile( url=url, title=name )
+      print "hosted_media"
+      print hosted_media
+      if hosted_media:
+         stream_url = hosted_media.resolve()
+         print stream_url
+
+   if stream_url:
       addon.resolve_url(stream_url)
    else:
       print "unable to resolve"
