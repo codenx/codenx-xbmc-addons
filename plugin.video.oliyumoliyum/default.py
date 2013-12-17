@@ -148,10 +148,22 @@ def parseYoutube( url ):
 def Load_Video( url ):
    print "Load_Video=" + url
    html = net.http_GET( url ).content
+   soup = BeautifulSoup( html )
    sourceVideos = []
 
+   # Handle href tags
+   for a in soup.findAll('a', href=True):
+      if a['href'].find("youtu.be") != -1:
+         sourceVideos.append('src="' + (a['href'].split()[0]) + '" ')
+         
+      if a['href'].find("youtube") != -1:
+         sourceVideos.append('src="' + (a['href'].split()[0]) + '" ')
+         
+      if a['href'].find("dailymotion") != -1:
+         sourceVideos.append('src="' + (a['href'].split()[0]) + ' ' +  ('width = ""'))
+
    # Handle embed tags
-   sourceVideos += re.compile( '<embed(.+?)>', flags=re.DOTALL).findall( html )
+   #sourceVideos += re.compile( '<embed(.+?)>', flags=re.DOTALL).findall( html )
 
    # Handle iframe tags
    sourceVideos += re.compile( '<iframe(.+?)>').findall( html )

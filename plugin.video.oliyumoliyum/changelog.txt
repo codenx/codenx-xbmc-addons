@@ -55,3 +55,7 @@
 
 - Fix dailymotion videos, use plugin instead of urlresolver
 
+[B]Version v2.0.3[/B]
+
+- Parse pages that display a clickable image to reach the video
+
