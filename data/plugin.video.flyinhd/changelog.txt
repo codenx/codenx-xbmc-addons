@@ -2,3 +2,7 @@
 
 - Initial beta version
 
+[B]Version v0.0.2[/B]
+
+- Fix vidoes hosted in other services like youtube/dailmotion.
+
