@@ -59,3 +59,7 @@
 
 - Parse pages that display a clickable image to reach the video
 
+[B]Version v2.0.4[/B]
+
+- Add Live TV with over 40 tamil channels
+

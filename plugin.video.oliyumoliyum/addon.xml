@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="2.0.3" provider-name="codenx">
+<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="2.0.4" provider-name="codenx">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
 	 <import addon="script.module.simplejson" version="2.0.10" />
     <import addon="script.module.beautifulsoup" version="3.2.0"/>
     <import addon="script.module.urlresolver" version="2.0.9"/>
@@ -12,8 +12,14 @@
         <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Oliyum Oliyum scrapes the web for Tamil TV Shows, Serials and Movies.</summary>
-    <description>Links to watch Tamil TV Shows and Movies.</description>
+    <summary lang="en">Oliyum Oliyum scrapes the web for Tamil TV Shows, Serials and Movies.</summary>
+    <description lang="en">Links to watch Tamil TV Shows and Movies.</description>
     <platform>all</platform>
+    <language></language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <forum></forum>
+    <website></website>
+    <source>https://github.com/codenx/codenx-xbmc-addons/tree/master/plugin.video.oliyumoliyum</source>
+    <email>foo@bar.com</email>
   </extension>
 </addon>

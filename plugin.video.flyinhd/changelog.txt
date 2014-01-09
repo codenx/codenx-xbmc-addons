@@ -6,3 +6,7 @@
 
 - Fix vidoes hosted in other services like youtube/dailmotion.
 
+[B]Version v0.0.3[/B]
+
+- Force users to login to flyinhd before using the plugin. User has to create an account in www.flyinhd.com
+

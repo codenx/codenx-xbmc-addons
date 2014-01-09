@@ -1,6 +1,6 @@
 import urllib, urllib2
 import xbmcplugin, xbmcgui, xbmc
-import re, sys, cgi
+import re, sys, cgi, os
 import urlresolver
 from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
@@ -22,7 +22,7 @@ LANGS = [ 'tamil', 'hindi', 'telugu' ]
 
 addonId = 'plugin.video.flyinhd'
 addon = Addon( addonId, sys.argv )
-addonPath = addon.get_profile()
+addonPath = xbmc.translatePath( addon.get_profile() )
 cookiePath = os.path.join( addonPath, 'cookies' )
 cookieFile = os.path.join( cookiePath, "cookies.txt" )
 
@@ -288,16 +288,30 @@ def Load_Video( name, url ):
       xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def Main_Categories():
-   print "cookie path:" + cookiePath
-   print "cookie file:" + cookieFile
    for lang in LANGS:
       url = BASE_URL + '/?lang=' + lang
       addon.add_directory( { 'mode' : 'movie', 'url' : url, 'lang' : lang },
                            { 'title' : '[B]%s[/B]' % lang.capitalize() } )
+   addon.add_directory( { 'mode' : 'settings' }, { 'title' : '[B]Addon Setting[/B]' } )
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
                        
 def Main_Movie( url, lang ):
    print "movie:" + url
+   username = addon.get_setting( 'username' )
+   password = addon.get_setting( 'password' )
+   if username == "" or password == "":
+      addon.show_ok_dialog( [ 'Login required to access movies. Please create account in www.flyinhd.com' ], title='Login Required' )
+      return
+      
+   params = { 'login' : username, 'password' : password }
+   try:
+      response = net.http_POST( BASE_URL + '/login', params )
+      if 'login' in response.get_url(): 
+         raise urllib2.URLError( 'login failed')
+   except urllib2.URLError, e:
+      addon.show_ok_dialog( [ 'Wrong username or password' ], title='Login Failed' )
+      return
+
    addon.add_directory( { 'mode' : 'movie_recent', 'url' : BASE_URL, 'lang' : lang }, 
                         { 'title' : '[B]Most Recent[/B]' } )
 
@@ -384,6 +398,10 @@ def Movie_Recent( url, lang ):
 
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
+def Settings():
+   print "settings"
+   addon.show_settings()
+
 ##### Queries ##########
 mode = addon.queries['mode']
 url = addon.queries.get('url', None)
@@ -420,6 +438,9 @@ else:
    if mode == 'main':
       Main_Categories()
           
+   elif mode == 'settings':
+      Settings()
+
    elif mode == 'movie':
       Main_Movie( url, lang )
 
@@ -435,3 +456,4 @@ else:
    elif mode == 'load_video':
       Load_Video( name, url )
 
+print "exit: flyinhd thread"

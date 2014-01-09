@@ -1,0 +1,212 @@
+<?xml version="1.0" ?>
+<categories>
+   <category name='Masala'>
+      <channel name='Vijay TV'>
+         <url>rtmpe://50.7.102.194/sunrtmplayback/ app=sunrtmplayback/ playpath=vijaytv_1 token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/ swfVfy=true live=true timeout=30</url>
+         <thumb>http://static3.wikia.nocookie.net/__cb20110929123041/logopedia/images/7/7f/Star_Vijay.png</thumb>
+      </channel>
+
+      <channel name='Vijay TV #2'>
+         <url>rtmp://77.81.98.137/strm playpath=vijay swfUrl=http://www.casti.tv/player/player-licensed55.swf pageUrl=http://www.casti.tv/embed.php?v=vijay1&vw=600&vh=450&video=0&domain=pogotv.eu=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/ss/star_vijay_in.jpg</thumb>
+      </channel>
+
+      <channel name='Kalaignar TV'>
+         <url>rtmp://50.7.175.253:1939/base2 playpath=kalai0.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/kalaignar-tv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/kk/kalaignar_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Jaya TV'>
+         <url>http://fm4.channellive.tv/jaya_play?ip=84.227.178.120/24&e=1374043900&h=b3b11e717f0bddb2136a5bc86784f269=true%20timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/jj/jaya_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Sathiyam TV'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=asia12.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/sathiyam-tv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/ss/sathiyam_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Thanthi TV'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil29.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/thanthi-tv/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/tt/thanthi_tv_in.jpg</thumb>
+      </channel>
+
+      <channel name='Polimer'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil23.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/polimer-tv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/pp/polimer_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Murasu TV'>
+         <url>rtmp://50.7.175.253:1939/base2 playpath=kalai5.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/murasu-tv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/kk/kalaignar_murasu.jpg</thumb>
+      </channel>
+
+      <channel name='Captain TV'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil0.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/captain-tv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/hires/cc/captain_tv.png</thumb>
+      </channel>
+
+      <channel name='Dheeran TV'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=asia14.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/dheeran-tv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/dd/dheeran_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Minnal Kids'>
+         <url>rtmpe://68.235.37.141/minnalwebs/mkids token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/=true timeout=30</url>
+         <thumb>http://1.bp.blogspot.com/-y7TuGJEVcWo/UcqusO4Rt4I/AAAAAAAACM8/ccIhq_s2Jk0/s1600/minnalkidz.jpg</thumb>
+      </channel>
+
+      <channel name='Chithiram'>
+         <url>rtmp://50.7.175.253:1939/base2 playpath=kalai4.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/chithiram-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/hires/kk/kalaignar_chithiram.png</thumb>
+      </channel>
+
+      <channel name='Minnal Vellithirai'>
+         <url>rtmpe://68.235.37.141/minnalwebs/mvelli token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/=true timeout=30</url>
+         <thumb>http://1.bp.blogspot.com/-O-zdO8ZJ3Kg/UcqutZuQ_7I/AAAAAAAACNI/X1DYT7f80Y4/s1600/minnalvellithirai.jpg</thumb>
+      </channel>
+
+      <channel name='Vendhar TV'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil5.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/vendhar-tv/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/vv/vendhar_tv_in.jpg</thumb>
+      </channel>
+
+      <channel name='Vasanth TV'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil7.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/vasanth-tv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/vv/vasanth_tv.jpg</thumb>
+      </channel>
+
+      <channel name='DD Podhigai'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=dd10.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/dd-podhigai-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/dd/dd_podhigai.jpg</thumb>
+      </channel>
+
+      <channel name='Makkal'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil20.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/makkal-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/mm/makkal_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Sri Sankara TV'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil27.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/sri-sankara-tv/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/ss/sri_sankara.jpg</thumb>
+      </channel>
+
+      <channel name='Puthuyugam'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil9.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/puthuyugam-tv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/pp/puthuyugam_tv_in.jpg</thumb>
+      </channel>
+
+      <channel name='Tamilan TV'>
+         <url>rtmp://38.96.175.192:1943/live playpath=tamilantelevision swfUrl=http://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf/[[DYNAMIC]]/1 live=1 pageUrl=http://livetvchannelsfree.com/tamillantv.html=true timeout=15</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/tt/tamilan_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Angel TV'>
+         <url>rtmp://stream.sin1.swiftserve.com/live/angeltv/ playpath=atvarchive swfUrl=http://edge.sin1.swiftserve.com/angeltv/angeltvlfd/flowplayer/flowplayer-3.2.7.swf pageUrl=http://edge.sin1.swiftserve.com/angeltv/angeltvlfd/flowplayer/bwcheckangeltv-mid.html=true timeout=15</url>
+         <thumb>http://www.lyngsat-logo.com/hires/aa/angel_tv_in.png</thumb>
+      </channel>
+
+      <channel name='Peppers TV'>
+         <url>rtmp://live.wmncdn.net/peppers/peppers.stream swfUrl=http://player-apac-sing.webmobilive.com/player/liveplayer.swf pageUrl=http://www.pepperstv.com/live.aspx live=true timeout=15</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/pp/peppers_entertainment_tv.jpg</thumb>
+      </channel>
+   </category>
+
+   <category name='Comedy'>
+      <channel name='Adhitya TV'>
+         <url>rtmpe://68.235.37.94/rtmplayback/ app=rtmplayback/ playpath=adithya token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/ swfVfy=true live=true timeout=15</url>
+         <thumb>http://2.bp.blogspot.com/-tY5qMk8SPRA/US3Ia0lsb0I/AAAAAAAABjA/tVkLMR4SxuE/s1600/adhitya_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Sirippoli'>
+         <url>rtmp://50.7.175.253:1939/base2 playpath=kalai3.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/sirippoli-tv/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/kk/kalaignar_sirippoli.jpg</thumb>
+      </channel>
+      
+      <channel name='Minnal Comedy'>
+         <url>rtmpe://68.235.37.141/minnalwebs/mcomedy1 app=minnalwebs/ playpath=mcomedy1 token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/ swfVfy=true live=true timeout=15</url>
+         <thumb>http://3.bp.blogspot.com/-00pNaP3mk3I/UdXSYA9v8iI/AAAAAAAACQs/DnQfCO5a5fw/s202/minnalcomedy.jpg</thumb>
+      </channel>
+   </category>
+
+   <category name='News'>
+      <channel name='Captain TV'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil1.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/captain-tv-news/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/hires/cc/captain_tv.png</thumb>
+      </channel>
+
+      <channel name='Puthiya Thalaimurai'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil22.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/puthiya-thalaimurai-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/pp/puthiya_thalaimurai.jpg</thumb>
+      </channel>
+
+      <channel name='Polimer News'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil21.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/gtv-spv-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/pp/polimer_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Kalaignar Seithigal'>
+         <url>rtmp://50.7.175.253:1939/base2 playpath=kalai1.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/seithigal-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/kk/kalaignar_tv.jpg</thumb>
+      </channel>
+
+      <channel name='Jaya News'>
+         <url>rtmp://cdn.m.yupptv.tv/liveorigin/jayaplus1</url>
+         <thumb>http://4.bp.blogspot.com/-AZHubEke2fo/US4z4mTcgAI/AAAAAAAABpQ/eJf6NAaL4rI/s1600/jeyaplus.jpg</thumb>
+      </channel>
+   </category>
+
+   <category name='Movie'>
+      <channel name='K TV'>
+         <url>rtmpe://50.7.102.194/rtmplayback/ktv token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/=true timeout=30</url>
+         <thumb>http://1.bp.blogspot.com/-NUs1742Ezac/US3CDmEyh4I/AAAAAAAABhw/HyPcyhkw7Ic/s1600/ktv_in.jpg</thumb>
+      </channel>
+
+      <channel name='Jaya Movie'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil28.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/jaya-movies-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/jj/j_movie_in.jpg</thumb>
+      </channel>
+
+      <channel name='Minnal Movie'>
+         <url>rtmpe://68.235.37.141/minnalwebs/mmovies11 token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/=true timeout=30</url>
+         <thumb>http://4.bp.blogspot.com/-GnDwjxrhFU0/UdXSYtV1JmI/AAAAAAAACQ4/HmDjl3JhVSo/s202/minnalmovie.jpg</thumb>
+      </channel>
+   </category>
+
+   <category name='Music'>
+      <channel name='Isai Aruvi'>
+         <url>rtmp://50.7.175.253:1939/base2 playpath=kalai2.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/isai-aruvi-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/kk/kalaignar_isai_aruvi.jpg</thumb>
+      </channel>
+
+      <channel name='Channel UFX'>
+         <url>rtmp://50.7.175.252:1940/base2 playpath=tamil6.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/channel-ufx-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/hires/cc/channel_ufx.png</thumnb>
+      </channel>
+
+      <channel name='Sun Music'>
+         <url>mms://fm.live.channellive.tv:80/13-SunMusic?ip=62.61.150.14=true%20timeout=15</url>
+         <thumb>http://2.bp.blogspot.com/-X6rfJflUc14/US2-jvxxORI/AAAAAAAABhA/VZpTJn3YzG8/s1600/sunmusic_in.jpg</thumb>
+      </channel>
+
+      <channel name='7s Music'>
+         <url>rtmp://50.7.175.253:1939/base2 playpath=hmtv5.stream swfUrl=http://tamiltv.tv/wp-content/uploads/jw-player-plugin-for-wordpress/player/player.swf pageUrl=http://tamiltv.tv/7s-music-live/=true timeout=30</url>
+         <thumb>http://www.lyngsat-logo.com/logo/tv/num/7s_music.jpg</thumb>
+      </channel>
+
+      <channel name='Minnal Music'>
+         <url>rtmpe://68.235.37.141/minnalwebs/mmusic token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/=true timeout=150</url>
+         <thumb>http://1.bp.blogspot.com/-eYngYeK29x4/UdXSZPsArVI/AAAAAAAACRI/9XOXWkEAFrw/s202/minnalmusiz.jpg</thumb>
+      </channel>
+
+      <channel name='Minnal Hits HD'>
+         <url>rtmpe://68.235.37.141/minnalwebs/mhitshd1 token=frACE6aMeGuB swfUrl=http://www.watchsuntv.com/play/flash/secure.swf pageUrl=http://www.watchsuntv.com/play/=true timeout=30</url>
+         <thumb>http://2.bp.blogspot.com/-SP_0oaKF3Rk/UdXSYvkxADI/AAAAAAAACQ8/fACgH5W2hnc/s202/minnalhitshd.jpg</thumb>
+      </channel>
+
+      <channel name='Vaanavil Music'>
+         <url>rtmpe://68.235.37.141/minnalwebs/ playpath=vaanavil1 swfUrl=http://www.watchsuntv.com/play/flash/secure.swf token=frACE6aMeGuB pageURL=http://www.watchsuntv.com/play swfVfy=true live=true timeout=12</url>
+         <thumb>http://4.bp.blogspot.com/-W5qIU2tIJf0/Usp_piz_BcI/AAAAAAAACXk/CtrdXL7OlKE/s1600/vaanaviltv.jpg</thumb>
+      </channel>
+   </category>
+</categories>
