@@ -63,3 +63,7 @@
 
 - Add Live TV with over 40 tamil channels
 
+[B]Version v2.0.5[/B]
+
+- Add Radio channels
+
