@@ -67,3 +67,7 @@
 
 - Add Radio channels
 
+[B]Version v2.0.6[/B]
+
+- Reorder main menu, tubetamil bug does not bring down live tv/radio
+

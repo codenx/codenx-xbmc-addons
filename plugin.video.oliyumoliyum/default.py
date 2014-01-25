@@ -18,13 +18,13 @@ except:
   import storageserverdummy as StorageServer
 
 BASE_URL = "http://www.tubetamil.com/"
-MOVIE_URL = "http://www.flyinhd.com"
 net = Net()
 addonId = 'plugin.video.oliyumoliyum'
 addon = Addon( addonId, sys.argv )
 addonPath = xbmc.translatePath( addon.get_path() )
 resPath = os.path.join( addonPath, 'resources' )
-tvxmlFile = os.path.join( resPath, 'tamiltv.xml' )
+tvxmlFile = os.path.join( resPath, 'livetv.xml' )
+radioxmlFile = os.path.join( resPath, 'liveradio.xml' )
 
 cache = StorageServer.StorageServer( addonId )
 cache.dbg = True
@@ -58,7 +58,6 @@ def parseTvPage():
    soup = BeautifulSoup( xfile )
    for category in soup.categories.findAll( 'category' ):
       key = category[ 'name' ]
-      print "key: " + key
       result = {}
       for channel in category.findAll( 'channel' ):
          name = channel[ 'name' ]
@@ -67,6 +66,17 @@ def parseTvPage():
          result[ name ] = ( url, img )
       tvChannel[ key ] = result
    return tvChannel
+
+def parseRadioPage():
+   radioChannel = []
+   xfile = open(radioxmlFile, 'r').read()
+   soup = BeautifulSoup( xfile )
+   for channel in soup.findAll( 'channel' ):
+      name = channel[ 'name' ]
+      url = channel.url.text
+      img = channel.thumb.text
+      radioChannel.append( ( name, url, img ) )
+   return radioChannel
 
 def parseDailymotion( url ):
    videos = []
@@ -271,12 +281,17 @@ def Load_Video( url ):
       xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def Main_Categories():
+   addon.add_directory( { 'mode' : 'tv' }, { 'title' : '[B]Live TV[/B]' } )
+   addon.add_directory( { 'mode' : 'radio' }, { 'title' : '[B]Live Radio[/B]' } )
+   addon.add_directory( { 'mode' : 'vod' }, { 'title' : '[B]OnDemand[/B]' } )
+   xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+def Vod_Main():
+   print "main_vod"
    tubeIndex = cache.cacheFunction( parseMainPage )
    print "size = ", len(repr(tubeIndex))
    #print 'TubeIndex:'
    #pprint(tubeIndex, width=1)
-
-   addon.add_directory( { 'mode' : 'tv', 'url' : MOVIE_URL }, { 'title' : '[B]Live TV[/B]' } )
 
    for key, value in sorted( tubeIndex.items() ):
       if key == 'Comedy':
@@ -332,11 +347,11 @@ def Main_Leaf( url ):
 
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
-def TV_Main( url ):
-   print "tv_main:" + url
+def TV_Main():
+   print "tv_main"
    tvIndex = parseTvPage()
 
-   for key, value in tvIndex.items():
+   for key, value in sorted( tvIndex.items() ):
       if type( value ) != dict:
          continue
       else:
@@ -346,6 +361,17 @@ def TV_Main( url ):
 
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
                        
+def Radio_Main():
+   print "radio_main"
+   radioIndex = parseRadioPage()
+
+   for (name, url, img) in radioIndex:
+      url = name + '|' + url
+      addon.add_directory( { 'mode' : 'tv_leaf', 'url' : url }, { 'title' : '[B]%s[/B]' % name },
+                           img=img, total_items=len(radioIndex) )
+
+   xbmcplugin.endOfDirectory(int(sys.argv[1]))
+      
 def TV_Tree( url ):
    print "TV_Tree" + url
    tvIndex = parseTvPage()
@@ -414,6 +440,12 @@ if play:
 else:
    if mode == 'main':
       Main_Categories()
+
+   elif mode == 'radio':
+      Radio_Main()
+
+   elif mode == 'vod':
+      Vod_Main()
           
    elif mode == 'tree':
       Main_Tree( url )
@@ -425,7 +457,7 @@ else:
       Load_Video( url )
 
    elif mode == 'tv':
-      TV_Main( url )
+      TV_Main()
 
    elif mode == 'tv_tree':
       TV_Tree( url )
