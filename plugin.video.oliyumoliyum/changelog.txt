@@ -71,3 +71,7 @@
 
 - Reorder main menu, tubetamil bug does not bring down live tv/radio
 
+[B]Version v2.0.7[/B]
+
+- Add movie section
+

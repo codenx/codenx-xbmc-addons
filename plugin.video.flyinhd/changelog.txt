@@ -10,3 +10,7 @@
 
 - Force users to login to flyinhd before using the plugin. User has to create an account in www.flyinhd.com
 
+[B]Version v0.0.4[/B]
+
+- Disabling service temporarily.
+

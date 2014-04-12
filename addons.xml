@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.flyinhd" name="FlyInHD" version="0.0.3" provider-name="codenx">
+<addon id="plugin.video.flyinhd" name="FlyInHD" version="0.0.4" provider-name="codenx">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
 	 <import addon="script.module.simplejson" version="2.0.10" />
@@ -25,7 +25,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="2.0.6" provider-name="codenx">
+<addon id="plugin.video.oliyumoliyum" name="Oliyum Oliyum" version="2.0.7" provider-name="codenx">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
 	 <import addon="script.module.simplejson" version="2.0.10" />

@@ -5,6 +5,7 @@ import urlresolver
 from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
 from BeautifulSoup import BeautifulSoup
+import unicodedata
 #from pprint import pprint
 
 try:
@@ -18,6 +19,7 @@ except:
   import storageserverdummy as StorageServer
 
 BASE_URL = "http://www.tubetamil.com/"
+MOVIE_URL = "http://tamilbase.com/category/s3-movies/c159-latest-movei/"
 net = Net()
 addonId = 'plugin.video.oliyumoliyum'
 addon = Addon( addonId, sys.argv )
@@ -78,6 +80,25 @@ def parseRadioPage():
       radioChannel.append( ( name, url, img ) )
    return radioChannel
 
+def parseMoviePage( url ):
+   print "movie:" + url
+   try:
+      reponse = urllib2.urlopen(url)
+      html = response.read()
+   except urllib2.HTTPError, e:
+      html = e.fp.read()
+      pass
+
+   srcRegex = '<h2 class="archive_title">\s*<a href="(.+?)".+?>(.+?)</a>'
+   imgRegex = '<img src="(.+?)".*alt=""'
+   navRegex = '<a class="pagi-next" href=\'(.+?)\'>'
+
+   src = re.compile( srcRegex ).findall( html )
+   img = re.compile( imgRegex ).findall( html )
+   nav = re.compile( navRegex ).findall( html )
+
+   return nav, zip( src, img )
+
 def parseDailymotion( url ):
    videos = []
    link = urllib2.urlparse.urlsplit( url )
@@ -98,13 +119,13 @@ def parseDailymotion( url ):
 
       jsonObj = json.loads( html )
       for video in jsonObj['list']:
-         videos.append( 'http://www.dailmotion.com/video/' + str(video['id']) )
+         videos.append( 'http://www.dailymotion.com/' + str(video['id']) )
       return videos
          
    # Handle playlists
    playlistId = ''
    if 'jukebox' in url:
-      playlistId = re.compile("\?list[\]\=\%2Fplaylist\%2F(.+?)&").findall( url )[ 0 ]
+      playlistId = re.compile("\?list\[\]\=/playlist/(.+?)/").findall( url )[ 0 ]
    elif 'playlist' in url:
       playlistId = re.compile("playlist/(.+?)_").findall( url )[ 0 ]
    elif 'video/' in url:
@@ -178,7 +199,14 @@ def parseYoutube( url ):
 
 def Load_Video( url ):
    print "Load_Video=" + url
-   html = net.http_GET( url ).content
+   try:
+      response = urllib2.urlopen(url)
+      html = response.read()
+   except urllib2.HTTPError, e:
+      html = e.fp.read()
+      pass
+
+   #html = net.http_GET( url ).content
    soup = BeautifulSoup( html )
    sourceVideos = []
 
@@ -284,6 +312,7 @@ def Main_Categories():
    addon.add_directory( { 'mode' : 'tv' }, { 'title' : '[B]Live TV[/B]' } )
    addon.add_directory( { 'mode' : 'radio' }, { 'title' : '[B]Live Radio[/B]' } )
    addon.add_directory( { 'mode' : 'vod' }, { 'title' : '[B]OnDemand[/B]' } )
+   addon.add_directory( { 'mode' : 'movie', 'url' : MOVIE_URL }, { 'title' : '[B]Movies[/B]' } )
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def Vod_Main():
@@ -306,6 +335,20 @@ def Vod_Main():
 
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
                        
+def Movie_Main( url ):
+   print "main_movie:" + url
+   nav, link = parseMoviePage( url )
+
+   for ( page, title ), img in link:
+      title =  addon.unescape(title)
+      title = unicodedata.normalize('NFKD', unicode(title)).encode('ascii', 'ignore')
+      addon.add_directory( { 'mode' : 'load_videos', 'url' : page }, { 'title' : title },
+                           img=img, total_items=len(link) )
+   if nav:
+      addon.add_directory( { 'mode' : 'movie', 'url' : nav[0] }, { 'title' : '[B]Next Page...[/B]' } )
+
+   xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
 def Main_Tree( url ):
    print "tree:" + url + ":"
    tubeIndex = cache.cacheFunction( parseMainPage )
@@ -446,6 +489,9 @@ else:
 
    elif mode == 'vod':
       Vod_Main()
+          
+   elif mode == 'movie':
+      Movie_Main(url)
           
    elif mode == 'tree':
       Main_Tree( url )

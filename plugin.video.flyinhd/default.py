@@ -288,6 +288,9 @@ def Load_Video( name, url ):
       xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def Main_Categories():
+   addon.show_ok_dialog( [ 'FlyinHD service is unavailable. Please check back later.' ], title='Service Unavailable' )
+   return
+
    for lang in LANGS:
       url = BASE_URL + '/?lang=' + lang
       addon.add_directory( { 'mode' : 'movie', 'url' : url, 'lang' : lang },
