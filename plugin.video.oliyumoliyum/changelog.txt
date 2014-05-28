@@ -75,3 +75,7 @@
 
 - Add movie section
 
+[B]Version v2.1.0[/B]
+
+- Add icons for all icons, updated fanart
+

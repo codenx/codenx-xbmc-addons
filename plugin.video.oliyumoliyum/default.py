@@ -27,9 +27,18 @@ addonPath = xbmc.translatePath( addon.get_path() )
 resPath = os.path.join( addonPath, 'resources' )
 tvxmlFile = os.path.join( resPath, 'livetv.xml' )
 radioxmlFile = os.path.join( resPath, 'liveradio.xml' )
+iconPath = os.path.join( resPath, 'images' )
 
 cache = StorageServer.StorageServer( addonId )
 cache.dbg = True
+
+def getImgPath( icon ):
+   icon = icon + '.png'
+   imgPath = os.path.join( iconPath, icon )
+   if os.path.exists( imgPath ):
+      return imgPath
+   else:
+      return ''
 
 def parseMainPage():
    def parseUl( ul ):
@@ -309,10 +318,14 @@ def Load_Video( url ):
       xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def Main_Categories():
-   addon.add_directory( { 'mode' : 'tv' }, { 'title' : '[B]Live TV[/B]' } )
-   addon.add_directory( { 'mode' : 'radio' }, { 'title' : '[B]Live Radio[/B]' } )
-   addon.add_directory( { 'mode' : 'vod' }, { 'title' : '[B]OnDemand[/B]' } )
-   addon.add_directory( { 'mode' : 'movie', 'url' : MOVIE_URL }, { 'title' : '[B]Movies[/B]' } )
+   addon.add_directory( { 'mode' : 'tv' }, { 'title' : '[B]Live TV[/B]' }, 
+                        img=getImgPath('Live TV') )
+   addon.add_directory( { 'mode' : 'radio' }, { 'title' : '[B]Live Radio[/B]' }, 
+                        img=getImgPath('Live Radio') )
+   addon.add_directory( { 'mode' : 'vod' }, { 'title' : '[B]On Demand[/B]' }, 
+                        img=getImgPath('On Demand') )
+   addon.add_directory( { 'mode' : 'movie', 'url' : MOVIE_URL }, { 'title' : '[B]Movies[/B]' }, 
+                        img=getImgPath('Movies') )
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def Vod_Main():
@@ -331,7 +344,8 @@ def Vod_Main():
       else:
          mode = 'tree'
          path = key
-      addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key } )
+      addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key },
+                           img=getImgPath(key) )
 
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
                        
@@ -363,7 +377,8 @@ def Main_Tree( url ):
       else:
          mode = 'tree'
          path = url + '&' + key
-      addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key } )
+      addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key },
+                           img=getImgPath( key ) )
       
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
@@ -400,7 +415,8 @@ def TV_Main():
       else:
          mode = 'tv_tree'
          path = key
-      addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key } )
+      addon.add_directory( { 'mode' : mode, 'url' : path }, { 'title' : '[B]%s[/B]' % key },
+                           img=getImgPath(key) )
 
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
                        
