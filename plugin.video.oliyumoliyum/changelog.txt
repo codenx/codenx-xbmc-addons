@@ -79,3 +79,7 @@
 
 - Add icons for all icons, updated fanart
 
+[B]Version v2.2.0[/B]
+
+- Switch Movie source to tamilgun
+

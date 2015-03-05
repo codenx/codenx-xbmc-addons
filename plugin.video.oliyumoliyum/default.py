@@ -19,7 +19,7 @@ except:
   import storageserverdummy as StorageServer
 
 BASE_URL = "http://www.tubetamil.com/"
-MOVIE_URL = "http://tamilbase.com/category/s3-movies/c159-latest-movei/"
+MOVIE_URL = "http://tamilgun.com/categories/new-movies/"
 net = Net()
 addonId = 'plugin.video.oliyumoliyum'
 addon = Addon( addonId, sys.argv )
@@ -92,15 +92,15 @@ def parseRadioPage():
 def parseMoviePage( url ):
    print "movie:" + url
    try:
-      reponse = urllib2.urlopen(url)
+      response = urllib2.urlopen(url)
       html = response.read()
    except urllib2.HTTPError, e:
       html = e.fp.read()
       pass
 
-   srcRegex = '<h2 class="archive_title">\s*<a href="(.+?)".+?>(.+?)</a>'
-   imgRegex = '<img src="(.+?)".*alt=""'
-   navRegex = '<a class="pagi-next" href=\'(.+?)\'>'
+   srcRegex = '<h3><a href="(.+?)">(.+?)</a>'
+   imgRegex = '<img.*src="(.+?)" class="img-responsive wp-post-image"'
+   navRegex = '<li class="next"><a href="(.+?)">'
 
    src = re.compile( srcRegex ).findall( html )
    img = re.compile( imgRegex ).findall( html )
