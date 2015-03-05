@@ -83,3 +83,7 @@
 
 - Switch Movie source to tamilgun
 
+[B]Version v2.2.1[/B]
+
+- Fix for Kodi breakage and switched movie source to tamilgun
+
