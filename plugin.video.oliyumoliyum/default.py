@@ -206,6 +206,21 @@ def parseYoutube( url ):
       videos += [ 'http://' + netloc + path + qv ]
    return videos
 
+def parseToolstube( url ):
+   html = net.http_GET(url).content
+   src = re.search('var files = \'{".*":"(.+?)"}', html)
+   return urllib.unquote(src.group(1)).replace('\\/', '/')+'|Referer=http://toolstube.com/'
+    
+def parsePlayhd( url ):
+   if url.endswith('.mp4'):
+      return url
+   html = net.http_GET(url).content
+   src = re.search('source src="(.+?)" type=\'video/mp4\'', html)
+   if src:
+      return src.group(1)+'|Referer='+url
+   else:
+      return None
+
 def Load_Video( url ):
    print "Load_Video=" + url
    try:
@@ -215,41 +230,49 @@ def Load_Video( url ):
       html = e.fp.read()
       pass
 
-   #html = net.http_GET( url ).content
    soup = BeautifulSoup( html )
    sourceVideos = []
 
    # Handle href tags
    for a in soup.findAll('a', href=True):
       if a['href'].find("youtu.be") != -1:
-         sourceVideos.append('src="' + (a['href'].split()[0]) + '" ')
+         sourceVideos.append( a['href'].split()[0] )
          
       if a['href'].find("youtube") != -1:
-         sourceVideos.append('src="' + (a['href'].split()[0]) + '" ')
+         sourceVideos.append( a['href'].split()[0] )
          
       if a['href'].find("dailymotion") != -1:
-         sourceVideos.append('src="' + (a['href'].split()[0]) + ' ' +  ('width = ""'))
+         sourceVideos.append( a['href'].split()[0] )
 
-   # Handle embed tags
-   #sourceVideos += re.compile( '<embed(.+?)>', flags=re.DOTALL).findall( html )
+   # Handle 'file':'src' tags in jwplayer
+   src = re.compile('"label":"(.+?)","file":"(.+?)"').findall( html )
+   for res,s in src:
+      s = s.replace('\\', '')
+      sourceVideos += [ 'src="%s" data-res="%s"' % ( s, res ) ]
 
    # Handle iframe tags
    sourceVideos += re.compile( '<iframe(.+?)>').findall( html )
+   sourceVideos += re.compile( '<source(.+?)>').findall( html )
 
    # Handle Youtube new window
    src = re.compile( 'onclick="window.open\((.+?),' ).findall( html )
    if src:
-      sourceVideos += [ 'src=' + src[ 0 ] ]
+      sourceVideos += src[ 0 ]
 
    if len( sourceVideos ) == 0:
       print "No video sources found!!!!"
       addon.show_ok_dialog( [ 'Page has unsupported video' ], title='Playback' )
       return
       
+   print 'source videos',sourceVideos
    videoItem = []
    for sourceVideo in sourceVideos:
       print "sourceVideo=" + sourceVideo
-      sourceVideo = re.compile( 'src=(?:\"|\')(.+?)(?:\"|\')' ).findall( sourceVideo )[0]
+      sourceVideoOrig = sourceVideo
+
+      if 'src=' in sourceVideo:
+         sourceVideo = re.compile( 'src=(?:\"|\')(.+?)(?:\"|\')' ).findall( sourceVideo )[0]
+
       sourceVideo = urllib.unquote( sourceVideo )
       print "sourceVideo=" + sourceVideo
       link = urllib2.urlparse.urlsplit( sourceVideo )
@@ -258,14 +281,32 @@ def Load_Video( url ):
       host = host.replace( '.com', '' )
       sourceName = host.capitalize()
       print "sourceName = " + sourceName
+      
+      if 'tamilgun' in host:
+         if 'data-res' in sourceVideoOrig:
+            res = re.findall( 'data-res="(.+?)"', sourceVideoOrig )[0]
+            sourceName = '%s %s' % ( sourceName, res )
+         videoItem.append( (sourceVideo+'|Referer='+url, sourceName ) )
 
-      if 'dailymotion' in host:
+      elif 'playhd.video' in host:
+         sourceVideo = parsePlayhd( sourceVideo )
+         if sourceVideo:
+            videoItem.append( (sourceVideo, sourceName ) )
+         else:
+            print "Skipping playhd.video"
+            continue
+
+      elif 'toolstube' in host:
+         sourceVideo = parseToolstube( sourceVideo )
+         videoItem.append( (sourceVideo, sourceName ) )
+
+      elif 'dailymotion' in host:
          sourceVideo = parseDailymotion( sourceVideo )
          for video in sourceVideo:
             print "sourceVideo : " + video
             videoId = re.compile('dailymotion\.com/(.+)').findall( video )[ 0 ]
             video = 'plugin://plugin.video.dailymotion_com/?mode=playVideo&url=' + videoId
-            videoItem.append( (video, sourceName, video ) )
+            videoItem.append( (video, sourceName ) )
 
       elif 'youtube' in host:
          sourceVideo = parseYoutube( sourceVideo )
@@ -275,25 +316,30 @@ def Load_Video( url ):
             if not hosted_media:
                print "Skipping video " + sourceName
                continue
-            videoItem.append( (video, sourceName, hosted_media ) )
+            video = hosted_media.resolve()
+            videoItem.append( (video, sourceName ) )
 
       else:
-         print "sourceVideo : " + sourceVideo
+         print "Resolve sourceVideo : " + sourceVideo
+         if 'videoraj' in sourceVideo:
+            sourceVideo = 'http://180upload.com/zpbkjopr46xl'
+            print "mod sourceVideo : " + sourceVideo
+         elif 'vimeo' in sourceVideo:
+            sourceVideo = sourceVideo.replace('https', 'http')
          hosted_media = urlresolver.HostedMediaFile( url=sourceVideo, title=sourceName )
-         if not hosted_media:
+         print "hosted_media", hosted_media
+         if not hosted_media.resolve():
             print "Skipping video " + sourceName
             continue
-         videoItem.append( (sourceVideo, sourceName, hosted_media ) )
+         print "URL works", hosted_media
+         video = hosted_media.resolve()
+         videoItem.append( (video, sourceName ) )
 
    if len( videoItem ) == 0:
       addon.show_ok_dialog( [ 'Video does not exist' ], title='Playback' )
    elif len(videoItem) == 1:
-      url, title, hosted_media = videoItem[ 0 ]
-      if 'dailymotion' in url:
-         stream_url = url
-      else:
-         stream_url = hosted_media.resolve()
-      print "stream_url " + stream_url
+      url, title = videoItem[ 0 ]
+      print "stream_url ", url
 
       pDialog = xbmcgui.DialogProgress()
       pDialog.create('Opening stream ' + title)
@@ -301,17 +347,20 @@ def Load_Video( url ):
       playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
       playlist.clear()
       listitem = xbmcgui.ListItem(title)
-      playlist.add(stream_url, listitem)
+      playlist.add(url, listitem)
       xbmc.Player(xbmc.PLAYER_CORE_AUTO).play(playlist)
    else:
       partNo = 1
       prevSource = ''
-      for sourceVideo, sourceName, _ in videoItem:
+      for sourceVideo, sourceName in videoItem:
          if sourceName != prevSource:
             partNo = 1
             prevSource = sourceName
 
-         title = sourceName + ' Part# ' + str( partNo )
+         title = sourceName
+         if partNo > 1:
+            title += ' Part# ' + str( partNo )
+
          addon.add_video_item( { 'url' : sourceVideo }, { 'title' : title } )
          partNo += 1
 
@@ -480,22 +529,7 @@ print "arg1: "+sys.argv[1]
 print "arg2: "+sys.argv[2]
 
 if play:
-   stream_url = None
-   if 'dailymotion' in url:
-      stream_url = url
-   else:
-      hosted_media = urlresolver.HostedMediaFile( url=url, title=name )
-      print "hosted_media"
-      print hosted_media
-      if hosted_media:
-         stream_url = hosted_media.resolve()
-         print stream_url
-
-   if stream_url:
-      addon.resolve_url(stream_url)
-   else:
-      print "unable to resolve"
-      addon.show_ok_dialog( [ 'Unknown hosted video' ], title='Playback' )
+   addon.resolve_url(url)
 else:
    if mode == 'main':
       Main_Categories()

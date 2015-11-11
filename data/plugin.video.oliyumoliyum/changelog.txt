@@ -87,3 +87,7 @@
 
 - Fix for Kodi breakage and switched movie source to tamilgun
 
+[B]Version v2.2.2[/B]
+
+- Fix tamilgun parsing, display resolution in source name.
+
