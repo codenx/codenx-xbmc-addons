@@ -20,6 +20,7 @@ except:
 
 BASE_URL = "http://www.tubetamil.com/"
 MOVIE_URL = "http://tamilgun.com/categories/new-movies/"
+HD_MOVIE_URL = "http://tamilgun.com/categories/hd-movies/"
 net = Net()
 addonId = 'plugin.video.oliyumoliyum'
 addon = Addon( addonId, sys.argv )
@@ -244,11 +245,24 @@ def Load_Video( url ):
       if a['href'].find("dailymotion") != -1:
          sourceVideos.append( a['href'].split()[0] )
 
+      if a['href'].find("tamildbox") != -1:
+         src = a['href'].split()[0]
+         print "tamildbox", src
+         resp = net.http_GET( src )
+         dbox = resp.content
+         sourceVideos += re.compile( '<iframe(.+?)>').findall( dbox )
+
    # Handle 'file':'src' tags in jwplayer
-   src = re.compile('"label":"(.+?)","file":"(.+?)"').findall( html )
-   for res,s in src:
-      s = s.replace('\\', '')
-      sourceVideos += [ 'src="%s" data-res="%s"' % ( s, res ) ]
+   src = re.compile('sources: (\[.+\])').findall( html )
+   if src:
+      links = json.loads( src[ 0 ] )
+      for link in links:
+         if 'label' in link:
+            res = link[ 'label' ]
+         else:
+            res = '720p'
+         s = link[ 'file' ].replace('\\', '')
+         sourceVideos += [ 'src="%s" data-res="%s"' % ( s, res ) ]
 
    # Handle iframe tags
    sourceVideos += re.compile( '<iframe(.+?)>').findall( html )
@@ -282,7 +296,10 @@ def Load_Video( url ):
       sourceName = host.capitalize()
       print "sourceName = " + sourceName
       
-      if 'tamilgun' in host:
+      if '.mp4' in sourceVideo:
+         videoItem.append( (sourceVideo, sourceName ) )
+         
+      elif 'tamilgun' in host:
          if 'data-res' in sourceVideoOrig:
             res = re.findall( 'data-res="(.+?)"', sourceVideoOrig )[0]
             sourceName = '%s %s' % ( sourceName, res )
@@ -309,6 +326,8 @@ def Load_Video( url ):
             videoItem.append( (video, sourceName ) )
 
       elif 'youtube' in host:
+         print "Skipping youtube video"
+         continue
          sourceVideo = parseYoutube( sourceVideo )
          for video in sourceVideo:
             print "sourceVideo : " + video
@@ -373,7 +392,9 @@ def Main_Categories():
                         img=getImgPath('Live Radio') )
    addon.add_directory( { 'mode' : 'vod' }, { 'title' : '[B]On Demand[/B]' }, 
                         img=getImgPath('On Demand') )
-   addon.add_directory( { 'mode' : 'movie', 'url' : MOVIE_URL }, { 'title' : '[B]Movies[/B]' }, 
+   addon.add_directory( { 'mode' : 'movie', 'url' : MOVIE_URL }, { 'title' : '[B]New Movies[/B]' }, 
+                        img=getImgPath('Movies') )
+   addon.add_directory( { 'mode' : 'movie', 'url' : HD_MOVIE_URL }, { 'title' : '[B]HD Movies[/B]' }, 
                         img=getImgPath('Movies') )
    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
