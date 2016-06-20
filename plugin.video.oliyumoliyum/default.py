@@ -109,51 +109,6 @@ def parseMoviePage( url ):
 
    return nav, zip( src, img )
 
-def parseDailymotion( url ):
-   videos = []
-   link = urllib2.urlparse.urlsplit( url )
-   netloc = link.netloc
-   path = link.path
-
-   print "dailymotion url : " + url
-
-   def parseDailymotionPlaylist( playlistId ):
-      videos = []
-      dlurl = 'https://api.dailymotion.com/playlist/' + playlistId + '/videos'
-      try:
-         response = net.http_GET( dlurl )
-         html = response.content
-      except urllib2.HTTPError, e:
-         print "HTTPError : " + str( e )
-         return videos
-
-      jsonObj = json.loads( html )
-      for video in jsonObj['list']:
-         videos.append( 'http://www.dailymotion.com/' + str(video['id']) )
-      return videos
-         
-   # Handle playlists
-   playlistId = ''
-   if 'jukebox' in url:
-      playlistId = re.compile("\?list\[\]\=/playlist/(.+?)/").findall( url )[ 0 ]
-   elif 'playlist' in url:
-      playlistId = re.compile("playlist/(.+?)_").findall( url )[ 0 ]
-   elif 'video/' in url:
-      videoId = re.compile("video/(.+)").findall( path )[ 0 ]
-      videoId = videoId.split( '_' )[ 0 ]
-   elif 'swf' in url:
-      videoId = re.compile("swf/(.+)").findall( path )[ 0 ]
-   else:
-      print "unknown dailymotion link"
-      return videos
-
-   if playlistId:
-      print "playlistId : " + playlistId
-      videos += parseDailymotionPlaylist( playlistId )
-   else:
-      videos += [ 'http://' + netloc + '/' + videoId ]
-   return videos
-      
 def parseYoutube( url ):
    videos = []
    link = urllib2.urlparse.urlsplit( url )
@@ -212,15 +167,18 @@ def parseToolstube( url ):
    src = re.search('var files = \'{".*":"(.+?)"}', html)
    return urllib.unquote(src.group(1)).replace('\\/', '/')+'|Referer=http://toolstube.com/'
     
-def parsePlayhd( url ):
-   if url.endswith('.mp4'):
-      return url
-   html = net.http_GET(url).content
-   src = re.search('source src="(.+?)" type=\'video/mp4\'', html)
-   if src:
-      return src.group(1)+'|Referer='+url
-   else:
-      return None
+def resolvable( hmf, url ):
+   if not hmf:
+      return False
+
+   if not hmf.valid_url():
+      return False
+
+   resolvers = hmf.get_resolvers()
+   for resolver in resolvers:
+      if resolver.get_host_and_id( url ):
+         return True
+   return False
 
 def Load_Video( url ):
    print "Load_Video=" + url
@@ -242,9 +200,6 @@ def Load_Video( url ):
       if a['href'].find("youtube") != -1:
          sourceVideos.append( a['href'].split()[0] )
          
-      if a['href'].find("dailymotion") != -1:
-         sourceVideos.append( a['href'].split()[0] )
-
       if a['href'].find("tamildbox") != -1:
          src = a['href'].split()[0]
          print "tamildbox", src
@@ -278,7 +233,7 @@ def Load_Video( url ):
       addon.show_ok_dialog( [ 'Page has unsupported video' ], title='Playback' )
       return
       
-   print 'source videos',sourceVideos
+   print 'source videos', sourceVideos
    videoItem = []
    for sourceVideo in sourceVideos:
       print "sourceVideo=" + sourceVideo
@@ -299,55 +254,39 @@ def Load_Video( url ):
       if '.mp4' in sourceVideo:
          videoItem.append( (sourceVideo, sourceName ) )
          
+      #elif 'google' in sourceVideo:
+      #   videoItem.append( (sourceVideo, sourceName ) )
+         
       elif 'tamilgun' in host:
          if 'data-res' in sourceVideoOrig:
             res = re.findall( 'data-res="(.+?)"', sourceVideoOrig )[0]
             sourceName = '%s %s' % ( sourceName, res )
          videoItem.append( (sourceVideo+'|Referer='+url, sourceName ) )
 
-      elif 'playhd.video' in host:
-         sourceVideo = parsePlayhd( sourceVideo )
-         if sourceVideo:
-            videoItem.append( (sourceVideo, sourceName ) )
-         else:
-            print "Skipping playhd.video"
-            continue
-
       elif 'toolstube' in host:
          sourceVideo = parseToolstube( sourceVideo )
          videoItem.append( (sourceVideo, sourceName ) )
 
-      elif 'dailymotion' in host:
-         sourceVideo = parseDailymotion( sourceVideo )
-         for video in sourceVideo:
-            print "sourceVideo : " + video
-            videoId = re.compile('dailymotion\.com/(.+)').findall( video )[ 0 ]
-            video = 'plugin://plugin.video.dailymotion_com/?mode=playVideo&url=' + videoId
-            videoItem.append( (video, sourceName ) )
-
       elif 'youtube' in host:
          print "Skipping youtube video"
          continue
-         sourceVideo = parseYoutube( sourceVideo )
-         for video in sourceVideo:
-            print "sourceVideo : " + video
-            hosted_media = urlresolver.HostedMediaFile( url=video, title=sourceName )
-            if not hosted_media:
-               print "Skipping video " + sourceName
-               continue
-            video = hosted_media.resolve()
-            videoItem.append( (video, sourceName ) )
+         #sourceVideo = parseYoutube( sourceVideo )
+         #for video in sourceVideo:
+         #   print "sourceVideo : " + video
+         #   hosted_media = urlresolver.HostedMediaFile( url=video, title=sourceName )
+         #   if not hosted_media:
+         #      print "Skipping video " + sourceName
+         #      continue
+         #   video = hosted_media.resolve()
+         #   videoItem.append( (video, sourceName ) )
 
       else:
          print "Resolve sourceVideo : " + sourceVideo
-         if 'videoraj' in sourceVideo:
-            sourceVideo = 'http://180upload.com/zpbkjopr46xl'
-            print "mod sourceVideo : " + sourceVideo
-         elif 'vimeo' in sourceVideo:
+         if 'vimeo' in sourceVideo:
             sourceVideo = sourceVideo.replace('https', 'http')
          hosted_media = urlresolver.HostedMediaFile( url=sourceVideo, title=sourceName )
          print "hosted_media", hosted_media
-         if not hosted_media.resolve():
+         if not resolvable( hosted_media, sourceVideo ):
             print "Skipping video " + sourceName
             continue
          print "URL works", hosted_media

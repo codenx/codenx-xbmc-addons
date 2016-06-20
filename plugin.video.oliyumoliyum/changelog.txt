@@ -95,3 +95,7 @@
 
 - Added HD movies page from Tamilgun
 
+[B]Version v2.3.1[/B]
+
+- Removed dailmotion scrapper
+
