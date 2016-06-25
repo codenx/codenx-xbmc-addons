@@ -167,14 +167,42 @@ def parseToolstube( url ):
    src = re.search('var files = \'{".*":"(.+?)"}', html)
    return urllib.unquote(src.group(1)).replace('\\/', '/')+'|Referer=http://toolstube.com/'
     
+def parsePlayhd( url ):
+   if url.endswith('.mp4'):
+      return url
+   pattern = '(?://|\.)(playhd\.(?:video|fo))/embed\.php?.*?vid=([0-9]+)[\?&]*'
+   r = re.search(pattern, url)
+   if not r:
+      return None
+
+   host, media_id = r.groups()
+   wurl = 'http://www.playhd.video/embed.php?vid=%s' % media_id
+   html = net.http_GET(wurl).content
+   r = re.search('"content_video".*\n.*?src="(.*?)"', html)
+   if r:
+      stream_url = r.group(1) + '|Referer=http://www.playhd.video/embed.php'
+   else:
+      stream_url = None
+        
+   print "stream_url", stream_url
+   return stream_url
+
 def resolvable( hmf, url ):
+   if 'youtube' in url:
+      print "Skipping youtube video"
+      return False
+
+   if 'facebook' in url:
+      print "Skipping facebook video"
+      return False
+
    if not hmf:
       return False
 
    if not hmf.valid_url():
       return False
 
-   resolvers = hmf.get_resolvers()
+   resolvers = hmf._HostedMediaFile__resolvers
    for resolver in resolvers:
       if resolver.get_host_and_id( url ):
          return True
@@ -254,8 +282,13 @@ def Load_Video( url ):
       if '.mp4' in sourceVideo:
          videoItem.append( (sourceVideo, sourceName ) )
          
-      #elif 'google' in sourceVideo:
-      #   videoItem.append( (sourceVideo, sourceName ) )
+      elif 'playhd.video' in host or 'playhd.fo' in host:
+         sourceVideo = parsePlayhd( sourceVideo )
+         if sourceVideo:
+            videoItem.append( (sourceVideo, sourceName ) )
+         else:
+            print "Skipping playhd.video"
+            continue
          
       elif 'tamilgun' in host:
          if 'data-res' in sourceVideoOrig:
@@ -291,6 +324,7 @@ def Load_Video( url ):
             continue
          print "URL works", hosted_media
          video = hosted_media.resolve()
+         print "stream url", video
          videoItem.append( (video, sourceName ) )
 
    if len( videoItem ) == 0:

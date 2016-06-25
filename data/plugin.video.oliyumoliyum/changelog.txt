@@ -99,3 +99,7 @@
 
 - Removed dailmotion scrapper
 
+[B]Version v2.3.2[/B]
+
+- Fixed dailmotion dependency
+
