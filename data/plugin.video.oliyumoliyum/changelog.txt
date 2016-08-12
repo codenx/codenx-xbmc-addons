@@ -103,3 +103,7 @@
 
 - Fixed dailmotion dependency
 
+[B]Version v2.3.3[/B]
+
+- Fix user agent
+

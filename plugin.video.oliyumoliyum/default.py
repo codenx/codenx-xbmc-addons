@@ -93,7 +93,9 @@ def parseRadioPage():
 def parseMoviePage( url ):
    print "movie:" + url
    try:
-      response = urllib2.urlopen(url)
+      req = urllib2.Request(url)
+      req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:22.0) Gecko/20100101 Firefox/22.0')
+      response = urllib2.urlopen(req)
       html = response.read()
    except urllib2.HTTPError, e:
       html = e.fp.read()
@@ -211,7 +213,9 @@ def resolvable( hmf, url ):
 def Load_Video( url ):
    print "Load_Video=" + url
    try:
-      response = urllib2.urlopen(url)
+      req = urllib2.Request(url)
+      req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:22.0) Gecko/20100101 Firefox/22.0')
+      response = urllib2.urlopen(req)
       html = response.read()
    except urllib2.HTTPError, e:
       html = e.fp.read()
