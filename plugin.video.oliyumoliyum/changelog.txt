@@ -107,3 +107,7 @@
 
 - Fix user agent
 
+[B]Version v2.3.4[/B]
+
+- Fix regex for new backend code
+

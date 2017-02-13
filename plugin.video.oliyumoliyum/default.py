@@ -19,8 +19,8 @@ except:
   import storageserverdummy as StorageServer
 
 BASE_URL = "http://www.tubetamil.com/"
-MOVIE_URL = "http://tamilgun.com/categories/new-movies/"
-HD_MOVIE_URL = "http://tamilgun.com/categories/hd-movies/"
+MOVIE_URL = "http://tamilgun.pro/categories/new-movies/"
+HD_MOVIE_URL = "http://tamilgun.pro/categories/hd-movies/"
 net = Net()
 addonId = 'plugin.video.oliyumoliyum'
 addon = Addon( addonId, sys.argv )
@@ -101,9 +101,9 @@ def parseMoviePage( url ):
       html = e.fp.read()
       pass
 
-   srcRegex = '<h3><a href="(.+?)">(.+?)</a>'
-   imgRegex = '<img.*src="(.+?)" class="img-responsive wp-post-image"'
-   navRegex = '<li class="next"><a href="(.+?)">'
+   srcRegex = '<a href="(.+?)".*><i class="icon-play"></i></a>'
+   imgRegex = '<img.*src="\s*(.+?)\s*" alt="(.+?)" />'
+   navRegex = '<li><a class="next page-numbers" href="(.+?)">'
 
    src = re.compile( srcRegex ).findall( html )
    img = re.compile( imgRegex ).findall( html )
@@ -252,7 +252,7 @@ def Load_Video( url ):
          sourceVideos += [ 'src="%s" data-res="%s"' % ( s, res ) ]
 
    # Handle iframe tags
-   sourceVideos += re.compile( '<iframe(.+?)>').findall( html )
+   sourceVideos += re.compile( '<IFRAME(.+?)>').findall( html )
    sourceVideos += re.compile( '<source(.+?)>').findall( html )
 
    # Handle Youtube new window
@@ -273,6 +273,9 @@ def Load_Video( url ):
 
       if 'src=' in sourceVideo:
          sourceVideo = re.compile( 'src=(?:\"|\')(.+?)(?:\"|\')' ).findall( sourceVideo )[0]
+
+      if 'SRC=' in sourceVideo:
+         sourceVideo = re.compile( 'SRC=(?:\"|\')(.+?)(?:\"|\')' ).findall( sourceVideo )[0]
 
       sourceVideo = urllib.unquote( sourceVideo )
       print "sourceVideo=" + sourceVideo
@@ -400,7 +403,9 @@ def Movie_Main( url ):
    print "main_movie:" + url
    nav, link = parseMoviePage( url )
 
-   for ( page, title ), img in link:
+   for page, (img, title) in link:
+      img = img.lstrip()
+      img = img.rstrip()
       title =  addon.unescape(title)
       title = unicodedata.normalize('NFKD', unicode(title)).encode('ascii', 'ignore')
       addon.add_directory( { 'mode' : 'load_videos', 'url' : page }, { 'title' : title },
