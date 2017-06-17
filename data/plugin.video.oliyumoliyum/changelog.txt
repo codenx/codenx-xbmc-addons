@@ -111,3 +111,7 @@
 
 - Fix regex for new backend code
 
+[B]Version v2.3.5[/B]
+
+- Add support for tamildbox videos
+

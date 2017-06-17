@@ -6,6 +6,7 @@ from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
 from BeautifulSoup import BeautifulSoup
 import unicodedata
+import jsunpack
 #from pprint import pprint
 
 try:
@@ -18,7 +19,6 @@ try:
 except:
   import storageserverdummy as StorageServer
 
-BASE_URL = "http://www.tubetamil.com/"
 MOVIE_URL = "http://tamilgun.pro/categories/new-movies/"
 HD_MOVIE_URL = "http://tamilgun.pro/categories/hd-movies/"
 net = Net()
@@ -224,6 +224,16 @@ def Load_Video( url ):
    soup = BeautifulSoup( html )
    sourceVideos = []
 
+   try:
+      jsun = jsunpack.unpack(html).replace('\\','')
+      sources = json.loads( re.findall('sources:(.*?)\}\)', jsun)[0] )
+      for source in sources:
+         url = source['file']
+         url = urllib.quote_plus(url)
+         sourceVideos += [ 'src="%s" data-res="%s"' % (url, source['label']) ]
+   except:
+      pass
+
    # Handle href tags
    for a in soup.findAll('a', href=True):
       if a['href'].find("youtu.be") != -1:
@@ -234,10 +244,24 @@ def Load_Video( url ):
          
       if a['href'].find("tamildbox") != -1:
          src = a['href'].split()[0]
+         if 'watch' not in src:
+            continue
          print "tamildbox", src
          resp = net.http_GET( src )
          dbox = resp.content
          sourceVideos += re.compile( '<iframe(.+?)>').findall( dbox )
+
+         codes = re.findall('"return loadEP.([^,]*),(\d*)', dbox)
+         for ep_id, server_id in codes:
+            durl = 'http://www.tamildbox.com/actions.php?case=loadEP&ep_id=%s&server_id=%s'%(ep_id,server_id)
+            dhtml = net.http_GET(durl).content
+            source = re.compile( '(?i)<iframe(.+?)>').findall( dhtml )[0]
+            if 'googleapis' in source:
+               docid = re.findall('docid=([^&]*)',source)[0]
+               source = [ 'src="https://drive.google.com/open?id=' + docid + '"']
+               sourceVideos += source
+            sourceVideos += re.compile( '(?i)<iframe(.+?)>').findall( dhtml )
+            
 
    # Handle 'file':'src' tags in jwplayer
    src = re.compile('sources: (\[.+\])').findall( html )
@@ -252,7 +276,7 @@ def Load_Video( url ):
          sourceVideos += [ 'src="%s" data-res="%s"' % ( s, res ) ]
 
    # Handle iframe tags
-   sourceVideos += re.compile( '<IFRAME(.+?)>').findall( html )
+   sourceVideos += re.compile( '(?i)<iframe(.+?)>').findall( html )
    sourceVideos += re.compile( '<source(.+?)>').findall( html )
 
    # Handle Youtube new window
@@ -280,6 +304,10 @@ def Load_Video( url ):
       sourceVideo = urllib.unquote( sourceVideo )
       print "sourceVideo=" + sourceVideo
       link = urllib2.urlparse.urlsplit( sourceVideo )
+      if link.path == sourceVideo:
+         print "Skipping unknown path"
+         continue
+
       host = link.hostname
       host = host.replace( 'www.', '' )
       host = host.replace( '.com', '' )
